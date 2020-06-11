@@ -55,7 +55,7 @@ export class ConfigService {
   }
 
   get logLevel(): number {
-    return parseInt(env.logLevel, 10) || 3;
+    return parseInt(env.logLevel, 10) || 4;
   }
 
   get isDevMode(): boolean {
@@ -131,7 +131,7 @@ export class ConfigService {
   get channel(): any {
     return {
       ethProviderUrl: env.ethProvider,
-      logLevel: 2,
+      logLevel: 4,
       nodeUrl: env.paymentHub,
       signer: Wallet.fromMnemonic(fs.readFileSync(env.mnemonicFile, "utf8")).privateKey,
     };

@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
-import { ChannelModule } from "./channel/channel.module";
+//import { ChannelModule } from "./channel/channel.module";
 import { ConfigModule } from "./config/config.module";
 import { LoggerModule } from "./logger/logger.module";
 import { DatabaseModule } from "./database/database.module";
@@ -15,7 +15,7 @@ import { WebhooksModule } from "./webhooks/webhooks.module";
 
 @Module({
   imports: [
-    ChannelModule,
+    //ChannelModule,
     ConfigModule,
     LoggerModule,
     DatabaseModule,

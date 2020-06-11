@@ -80,7 +80,7 @@ export class TwitterService {
       } catch (e) {
         this.log.error(e);
         await this.tweet(
-         `@${tweet.user.screen_name} Oh no, something went wrong. @bohendo can you please fix me?`,
+         `@${tweet.user.screen_name} Oh no, something went wrong. @glamperd can you please fix me?`,
           tweet.id_str,
         );
       }

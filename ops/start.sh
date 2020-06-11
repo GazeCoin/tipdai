@@ -18,7 +18,7 @@ TIPDAI_DOMAINNAME="${TIPDAI_DOMAINNAME:-localhost}"
 TIPDAI_EMAIL="${TIPDAI_EMAIL:-noreply@gmail.com}" # for notifications when ssl certs expire
 TIPDAI_ETH_PROVIDER="${TIPDAI_ETH_PROVIDER:-http://localhost:8545}"
 TIPDAI_MODE="${TIPDAI_MODE:-development}"
-TIPDAI_LOG_LEVEL="${TIPDAI_LOG_LEVEL:-3}"
+TIPDAI_LOG_LEVEL="${TIPDAI_LOG_LEVEL:-6}"
 TIPDAI_PAYMENT_HUB="${TIPDAI_PAYMENT_HUB:-http://localhost:3000/api}"
 TIPDAI_PAYMENT_URL="${TIPDAI_PAYMENT_URL:-http://localhost:3000/redeem}"
 TIPDAI_TWITTER_APP_ACCESS_SECRET="${TIPDAI_TWITTER_APP_ACCESS_SECRET}"
@@ -102,6 +102,12 @@ postgres_port="5432"
 postgres_user="$project"
 postgres_password_file="/run/secrets/${project}_db_password"
 
+# Detect Windows
+if [[ "`pwd`" =~ /mnt/c/(.*) ]]
+then home_dir="//c/${BASH_REMATCH[1]}"
+else home_dir="`pwd`"
+fi
+
 ####################
 # Docker Image Config
 
@@ -150,7 +156,7 @@ services:
       DOMAINNAME: $TIPDAI_DOMAINNAME
       EMAIL: $TIPDAI_EMAIL
       MODE: dev
-      UPSTREAM_URL: bot:3000
+      UPSTREAM_URL: bot:3001
     ports:
       - "80:80"
       - "443:443"
@@ -171,7 +177,7 @@ services:
       PGPASSFILE: $postgres_password_file
       PGPORT: $postgres_port
       PGUSER: $postgres_user
-      PORT: 3000
+      PORT: 3001
       TWITTER_APP_ACCESS_SECRET: $TIPDAI_TWITTER_APP_ACCESS_SECRET
       TWITTER_APP_ACCESS_TOKEN: $TIPDAI_TWITTER_APP_ACCESS_TOKEN
       TWITTER_BOT_ACCESS_SECRET: $TIPDAI_TWITTER_BOT_ACCESS_SECRET
@@ -185,7 +191,7 @@ services:
       - $mnemonic
       - ${project}_db_password
     volumes:
-      - `pwd`:/root
+      - ${home_dir}:/root
 
   database:
     image: $database_image

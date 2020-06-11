@@ -35,9 +35,11 @@ export class ChannelService {
 
       const dbOpts = this.config.database;
 
+      this.log.info(`getting store...`);
       const store = getPostgresStore(
         `postgres://${dbOpts.username}:${dbOpts.password}@${dbOpts.host}:${dbOpts.port}/${dbOpts.database}`,
       );
+      this.log.info(`got store. channel nodeUrl ${this.config.channel.nodeUrl}`);
 
       const channel = await connext({
         ...this.config.channel,

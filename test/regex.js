@@ -38,7 +38,9 @@ for (const dm of [
     expected: { recipient: 'recipient', amount: '0.10' }
   }
 ]) {
-  const actual = dm.msg.match(constants.tipRegex('TipDai'))
+  const regx = constants.tipRegex('TipDai');
+  //console.log(`regx: ${regx}`);
+  const actual = dm.msg.match(regx);
   if (!actual || !actual[2]) {
     throw new Error(`Expected a match for "${dm.msg}" but got ${JSON.stringify(actual)}`);
   }

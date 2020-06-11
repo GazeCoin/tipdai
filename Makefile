@@ -8,6 +8,15 @@ VPATH=$(flags):dist
 SHELL=/bin/bash
 
 cwd=$(shell pwd)
+wincwd="C:\dev\workspace\tipdai"
+is_win=$(shell if [[ "`uname -a`" =~ .*Microsoft.* ]]; then echo true; else echo false; fi)
+ifeq ($(is_win), true)
+  volcwd=$(wincwd)
+else
+  volcwd=$(cwd)
+endif
+
+$(info $$volcwd is [${volcwd}])
 
 my_id=$(shell id -u):$(shell id -g)
 
@@ -15,7 +24,7 @@ find_options=-type f -not -path "*/node_modules/*" -not -name "*.swp" -not -path
 
 id=$(shell if [[ "`uname`" == "Darwin" ]]; then echo 0:0; else echo $(my_id); fi)
 
-docker_run=docker run --name=$(project)_builder --interactive --tty --rm --volume=$(cwd):/root $(project)_builder $(id)
+docker_run=docker run --name=$(project)_builder --interactive --tty --rm --volume=$(volcwd):/root $(project)_builder $(id)
 
 log_start=@echo "=============";echo "[Makefile] => Start building $@"; date "+%s" > $(flags)/.timestamp
 log_finish=@echo "[Makefile] => Finished building $@ in $$((`date "+%s"` - `cat $(flags)/.timestamp`)) seconds";echo "=============";echo
@@ -76,6 +85,7 @@ node-modules: builder package.json
 tipdai-js: node-modules tsconfig.json $(shell find src $(find_options))
 	$(log_start)
 	$(docker_run) "rm -rf dist/* && tsc --project tsconfig.build.json"
+##	$(docker_run) "ls /mnt/c"
 	$(log_finish) && touch $(flags)/$@
 
 tipdai-image-dev: tipdai-js $(shell find ops/bot $(find_options))

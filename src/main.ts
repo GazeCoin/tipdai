@@ -6,7 +6,7 @@ import { LoggerService } from "./logger/logger.service";
 
 async function bootstrap() {
   const log = new LoggerService("Main");
-  log.info(`Deploying TipDai`);
+  log.info(`Deploying DreamTips`);
   const app = await NestFactory.create(AppModule, { logger: log });
   app.enableCors();
   const config = app.get(ConfigService);
