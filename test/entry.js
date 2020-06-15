@@ -33,6 +33,7 @@ const axio = axios.create({
 (async () => {
   let nonce
 
+  console.log(`Getting sender token... ${baseUrl}`);
   nonce = (await axio.get(`${baseUrl}/user/auth?address=${sender.address}`)).data;
   const senderToken = `${nonce}:${await sender.signMessage(eth.utils.arrayify(nonce))}`;
   console.log(`Got sender token: ${senderToken}`);
