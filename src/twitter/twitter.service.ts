@@ -4,7 +4,7 @@ import * as qs from "qs";
 
 import { ConfigService } from "../config/config.service";
 import { LoggerService } from "../logger/logger.service";
-import { tipRegex } from "../constants";
+import { twitterTipRegex } from "../constants";
 import { MessageService } from "../message/message.service";
 import { UserRepository } from "../user/user.repository";
 import { User } from "../user/user.entity";
@@ -19,7 +19,7 @@ const tipfakedai_id = '1167103783056367616'
 
 @Injectable()
 export class TwitterService {
-  private invalid: boolean = false;
+  private inactive: boolean = false;
   private twitterApp: any;
   private twitterBot: any;
   private twitterDev: any;
@@ -37,7 +37,7 @@ export class TwitterService {
     this.log.setContext("TwitterService");
     if (!this.config.twitterDev.consumerKey || !this.config.twitterDev.consumerSecret) {
       this.log.warn(`Missing consumer token and/or secret, twitter stuff won't work.`);
-      this.invalid = true;
+      this.inactive = true;
     } else {
       this.twitterDev = new Twitter(this.config.twitterDev);
       this.twitterApp = new Twitter(this.config.twitterApp);
@@ -61,16 +61,21 @@ export class TwitterService {
     const sender = await this.userRepo.getTwitterUser(tweet.user.id_str, tweet.user.screen_name);
     const entities = tweet.extended_tweet ? tweet.extended_tweet.entities : tweet.entities;
     const tweetText = tweet.extended_tweet ? tweet.extended_tweet.full_text : tweet.text;
-    const tipInfo = tweetText.match(tipRegex((await this.getUser()).twitterName));
+    const tipInfo = tweetText.match(twitterTipRegex((await this.getUser()).twitterName));
     this.log.debug(`Got tipInfo ${JSON.stringify(tipInfo)}`);
-    if (tipInfo && tipInfo[1]) {
+    if (tipInfo && tipInfo[3]) {
       try {
         this.log.debug(`Trying to tip..`);
         const recipientUser = entities.user_mentions.find(
           user => user.screen_name === tipInfo[1],
         );
         const recipient = await this.userRepo.getTwitterUser(recipientUser.id_str, tipInfo[1]);
-        const response = await this.message.handlePublicMessage(sender, recipient, tweetText);
+        const response = await this.message.handlePublicMessage(
+          sender,
+          recipient,
+          tipInfo[3],
+          tweetText,
+        );
         if (response) {
           await this.tweet(
            `@${tweet.user.screen_name} ${response}`,
@@ -120,7 +125,7 @@ export class TwitterService {
   }
 
   public triggerCRC = async (): Promise<boolean> => {
-    if (this.invalid) { return; }
+    if (this.inactive) { return; }
     try {
       await this.twitterApp.triggerCRC(this.webhookId);
       return true;
@@ -131,34 +136,34 @@ export class TwitterService {
   }
 
   public tweet = async (status: string, replyTo?: string) => {
-    if (this.invalid) { return; }
+    if (this.inactive) { return; }
     return await this.twitterBot.tweet(status, replyTo);
   }
 
   public getUserById = async (user_id) => {
-    if (this.invalid) { return; }
+    if (this.inactive) { return; }
     return await this.twitterBot.getUserById(user_id);
   }
 
   public getUserByName = async (screen_name) => {
-    if (this.invalid) { return; }
+    if (this.inactive) { return; }
     return await this.twitterBot.getUserByName(screen_name);
   }
 
   public getMentions = async (options) => {
-    if (this.invalid) { return; }
+    if (this.inactive) { return; }
     const defaults = { count: "5", trim_user: true, include_entities: true };
     const res = await this.twitterBot.getMentions({ ...defaults, ...options });
     return res.map(tweet => tweet.text);
   }
 
   public sendDM = async (recipient_id, message) => {
-    if (this.invalid) { return; }
+    if (this.inactive) { return; }
     return await this.twitterBot.sendDM(recipient_id, message);
   }
 
   public botLogin = async () => {
-    if (this.invalid) { return; }
+    if (this.inactive) { return; }
     const res = await this.twitterApp.requestToken();
     const data = qs.parse(res);
     this.log.info(`Got token data: ${JSON.stringify(data)}`);
@@ -170,7 +175,7 @@ export class TwitterService {
 
   // Third step of 3-leg oauth (2nd step is the user clicking the authUrl)
   public connectBot = async (consumer_key, token, verifier): Promise<void> => {
-    if (this.invalid) { return; }
+    if (this.inactive) { return; }
     this.authUrl = undefined; // this url has been used & can't be used again
     const res = await this.twitterApp.getAccessToken({
       oauth_consumer_key: consumer_key,
@@ -197,7 +202,7 @@ export class TwitterService {
   }
 
   public subscribe = async (botId) => {
-    if (this.invalid) { return; }
+    if (this.inactive) { return; }
     const webhooks = await this.twitterApp.getWebhooks();
     const subscriptions = await this.twitterDev.getSubscriptions();
     this.log.info(`Got subscriptions: ${JSON.stringify(subscriptions.subscriptions)}`);

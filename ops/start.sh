@@ -11,9 +11,11 @@ docker swarm init 2> /dev/null || true
 # External Env Vars
 
 if [[ -f .env ]]
-then export $(cat .env | xargs)
+then source .env
 fi
 
+TIPDAI_DISCORD_ID="${TIPDAI_DISCORD_ID}"
+TIPDAI_DISCORD_TOKEN="${TIPDAI_DISCORD_TOKEN}"
 TIPDAI_DOMAINNAME="${TIPDAI_DOMAINNAME:-localhost}"
 TIPDAI_EMAIL="${TIPDAI_EMAIL:-noreply@gmail.com}" # for notifications when ssl certs expire
 TIPDAI_ETH_PROVIDER="${TIPDAI_ETH_PROVIDER:-http://localhost:8545}"
@@ -166,6 +168,8 @@ services:
   bot:
     image: $bot_image
     environment:
+      DISCORD_TOKEN: $TIPDAI_DISCORD_TOKEN
+      DISCORD_ID: $TIPDAI_DISCORD_ID
       ETH_PROVIDER: $TIPDAI_ETH_PROVIDER
       LOG_LEVEL: $TIPDAI_LOG_LEVEL
       MNEMONIC_FILE: /run/secrets/$mnemonic

@@ -24,7 +24,9 @@ find_options=-type f -not -path "*/node_modules/*" -not -name "*.swp" -not -path
 
 id=$(shell if [[ "`uname`" == "Darwin" ]]; then echo 0:0; else echo $(my_id); fi)
 
-docker_run=docker run --name=$(project)_builder --interactive --tty --rm --volume=$(volcwd):/root $(project)_builder $(id)
+interactive=$(shell if [[ -t 0 && -t 2 ]]; then echo "--interactive"; else echo ""; fi)
+
+docker_run=docker run --name=$(project)_builder $(interactive) --tty --rm --volume=$(volcwd):/root $(project)_builder $(id)
 
 log_start=@echo "=============";echo "[Makefile] => Start building $@"; date "+%s" > $(flags)/.timestamp
 log_finish=@echo "[Makefile] => Finished building $@ in $$((`date "+%s"` - `cat $(flags)/.timestamp`)) seconds";echo "=============";echo
@@ -53,9 +55,16 @@ clean: stop
 	rm -rf dist/*
 	rm -rf $(flags)/*
 
+deploy:
+	bash ops/deploy.sh remote
+
+deploy-fast:
+	bash ops/deploy.sh none
+
 reset: stop
 	docker container prune -f
 	docker volume rm tipdai_database_dev 2> /dev/null || true
+	rm -rf .channel-store
 
 restart: stop
 	bash ops/start.sh
