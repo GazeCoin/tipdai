@@ -40,11 +40,12 @@ export class DiscordService {
 
     this.discord.on("message", async (message) => {
       if (message.author.bot) return;
-      this.log.info(`Recieved discord message: ${stringify(message)}`);
+      this.log.info(`Received discord message: ${stringify(message)} Guild ${message.guild}`);
       this.log.info(`Mentions: ${stringify(message.mentions)}`);
 
-      const mentions = message.mentions.users.map(user => user.id);
+      const mentions = message.mentions.users.map(user => user.id).concat(message.mentions.roles.map(user => user.id));
       const sender = await this.userRepo.getDiscordUser(message.author.id);
+      this.log.info(`mentions: ${stringify(mentions)} sender: ${stringify(sender)}`);
 
       // If this is a private 1-on-1 message
       if (message.guild === null) {
@@ -63,6 +64,7 @@ export class DiscordService {
         const messageInfo = message.content.match(discordTipRegex(this.config.discordId));
         if (!messageInfo || !messageInfo[3]) {
           this.log.info(`Improperly formatted tip, ignoring`);
+          message.channel.send('Huh??? :confused:');
           return;
         }
         this.log.info(`Message regex info: ${stringify(messageInfo)}`);

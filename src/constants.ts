@@ -3,7 +3,7 @@ export const secretRegex = /secret=(0x[0-9a-fA-F]{64})/;
 
 const esc = (str: string): string => str.replace(/[.*+\-?^${}()|[\]\\]/g, "\\$&");
 
-const amountPattern = "[$]\([0-9]+\\.?[0-9]{0,2}\)";
+const amountPattern = "[$]?GZZ\([0-9]+\\.?[0-9]{0,2}\)";
 
 const discordMention = (userId?: string): string =>
   `<@!\?\(${userId || "\\\d{17,19}"}\)>`;

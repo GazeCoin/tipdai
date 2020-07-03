@@ -41,6 +41,7 @@ export class ConfigService {
 
   public getWallet(index: number | string = cfIndex): Wallet {
     const mnemonic = fs.readFileSync(env.mnemonicFile, "utf8");
+    console.log(`mnemonic ${mnemonic}`);
     return Wallet.fromMnemonic(mnemonic, `m/44'/60'/0'/0/${index}`).connect(this.ethProvider);
   }
 
@@ -139,11 +140,14 @@ export class ConfigService {
   }
 
   get channel(): any {
+    //const mnemonic = fs.readFileSync(env.mnemonicFile, "utf8");
+    const mnemonic = 'unable jaguar slogan letter innocent icon assume inner heavy timber march another';
+    console.log(`mnemonic ${mnemonic}`);
     return {
       ethProviderUrl: env.ethProvider,
       logLevel: 4,
       nodeUrl: env.paymentHub,
-      signer: Wallet.fromMnemonic(fs.readFileSync(env.mnemonicFile, "utf8")).privateKey,
+      signer: Wallet.fromMnemonic(mnemonic).privateKey,
     };
   }
 }
