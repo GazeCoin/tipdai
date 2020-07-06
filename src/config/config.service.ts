@@ -8,6 +8,8 @@ import { PostgresConfig, TwitterConfig } from "../types";
 const env = {
   discordId: process.env.DISCORD_ID,
   discordToken: process.env.DISCORD_TOKEN,
+  telegramBotId: process.env.TELEGRAM_BOT_ID,
+  telegramToken: process.env.TELEGRAM_TOKEN,
   ethProvider: process.env.ETH_PROVIDER,
   logLevel: process.env.LOG_LEVEL,
   mnemonicFile: process.env.MNEMONIC_FILE,
@@ -59,6 +61,14 @@ export class ConfigService {
 
   get discordId(): any {
     return env.discordId;
+  }
+
+  get telegramToken(): any {
+    return env.telegramToken;
+  }
+
+  get telegramBotId(): any {
+    return env.telegramBotId;
   }
 
   get wallet(): Wallet {

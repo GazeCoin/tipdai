@@ -19,6 +19,9 @@ export class User {
   @Column("text", { nullable: true })
   discordId!: string;
 
+  @Column("text", { nullable: true })
+  telegramId!: string;
+
   @OneToOne(type => Payment, { eager: true })
   @JoinColumn()
   cashout: Payment;

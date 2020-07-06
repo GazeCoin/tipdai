@@ -27,6 +27,19 @@ export class UserRepository extends Repository<User> {
     return user;
   }
 
+  async getTelegramUser(telegramId: string): Promise<User> {
+    let user = await this.findOne({ where: { telegramId } });
+    let shouldSave = false;
+    if (!user) {
+      user = await this.create({ telegramId });
+      shouldSave = true;
+    }
+    if (shouldSave) {
+      await this.save(user);
+    }
+    return user;
+  }
+
   async getTwitterUser(twitterId: string, twitterName?: string): Promise<User> {
     let user = await this.findOne({ where: { twitterId } });
     let shouldSave = false;
