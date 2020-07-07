@@ -3,7 +3,7 @@ const constants = require("../dist/constants");
 // Test regex for parsing discord tips
 for (const dm of [
   {
-    msg: "Hey <@!713383231814107176> please give <@!387368307533152274> $100 thanks",
+    msg: "Hey <@!713383231814107176> please give <@!387368307533152274> GZE100 thanks",
     expected: { recipient: "387368307533152274", amount: "100" },
   },
 ]) {
@@ -22,39 +22,39 @@ for (const dm of [
 // Test regex for parsing twitter tips
 for (const dm of [
   {
-    msg: "@TipDai Hi, send @recipient some money: $0.10 or else! #TipDai",
+    msg: "@TipDai Hi, send @recipient some money: GZE0.10 or else! #TipDai",
     expected: { recipient: "recipient", amount: "0.10" },
   },
   {
-    msg: "@recipient @TipDai @TipDai send @recipient_ $5 please. #TipDai",
+    msg: "@recipient @TipDai @TipDai send @recipient_ gze5 please. #TipDai",
     expected: { recipient: "recipient_", amount: "5" },
   },
   {
-    msg: "@recipient @TipDai @TipDai send @recipient $5 please. #TipDai",
+    msg: "@recipient @TipDai @TipDai send @recipient gze5 please. #TipDai",
     expected: { recipient: "recipient", amount: "5" },
   },
   {
-    msg: "@recipient @TipDai @TipDai send @recipient $0.10 please.#TipDai",
+    msg: "@recipient @TipDai @TipDai send @recipient gze0.10 please.#TipDai",
     expected: { recipient: "recipient", amount: "0.10" },
   },
   {
-    msg: "@TipDai Hi, send @recipient (not @invalid) some money: $0.101.#TipDai",
+    msg: "@TipDai Hi, send @recipient (not @invalid) some money: gze0.101.#TipDai",
     expected: { recipient: "recipient", amount: "0.10" },
   },
   {
-    msg: "@TipDai Hi, send @recipient (not @invalid) some money: $0.10.  #TipDai",
+    msg: "@TipDai Hi, send @recipient (not @invalid) some money: gze0.10.  #TipDai",
     expected: { recipient: "recipient", amount: "0.10" },
   },
   {
-    msg: "@TipDai Hi, send @recipient (not @invalid) some money: $0.10#TipDai",
+    msg: "@TipDai Hi, send @recipient (not @invalid) some money: gZE0.10#TipDai",
     expected: { recipient: "recipient", amount: "0.10" },
   },
   {
-    msg: "@TipDai Hi, send @recipient $0.10 and give @invalid like idk $100.#TipDai",
+    msg: "@TipDai Hi, send @recipient $0.10 and give @invalid like idk GZE0.10#TipDai",
     expected: { recipient: "recipient", amount: "0.10" },
   },
   {
-    msg: "@TipDai Hi, send @recipient some money: $0.10.. #TipDai",
+    msg: "@TipDai Hi, send @recipient some money: GZE0.10.. #TipDai",
     expected: { recipient: "recipient", amount: "0.10" },
   },
 ]) {

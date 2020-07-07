@@ -203,7 +203,9 @@ export class TwitterService {
 
   public subscribe = async (botId) => {
     if (this.inactive) { return; }
+    this.log.info('Getting webhooks');
     const webhooks = await this.twitterApp.getWebhooks();
+    this.log.info('Getting subs...');
     const subscriptions = await this.twitterDev.getSubscriptions();
     this.log.info(`Got subscriptions: ${JSON.stringify(subscriptions.subscriptions)}`);
     let crcRes;

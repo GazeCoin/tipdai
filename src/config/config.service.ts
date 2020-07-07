@@ -150,9 +150,7 @@ export class ConfigService {
   }
 
   get channel(): any {
-    //const mnemonic = fs.readFileSync(env.mnemonicFile, "utf8");
-    const mnemonic = 'unable jaguar slogan letter innocent icon assume inner heavy timber march another';
-    console.log(`mnemonic ${mnemonic}`);
+    const mnemonic = fs.readFileSync(env.mnemonicFile, "utf8");
     return {
       ethProviderUrl: env.ethProvider,
       logLevel: 4,

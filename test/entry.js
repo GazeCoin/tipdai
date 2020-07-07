@@ -83,7 +83,7 @@ const axio = axios.create({
 
   res = (await axio.post(`${baseUrl}/message/public`, {
     address: sender.address ,
-    message: `@${screenName} send @user $0.11 #TipDai`,
+    message: `@${screenName} send @user gze0.11 #TipDai`,
     recipientId: recipientUser.id,
     token: senderToken,
   })).data;
@@ -92,7 +92,7 @@ const axio = axios.create({
 
   res = (await axio.post(`${baseUrl}/message/public`, {
     address: sender.address ,
-    message: `@${screenName} send @user $0.05 #TipDai`,
+    message: `@${screenName} send @user gze0.05 #TipDai`,
     recipientId: recipientUser.id,
     token: senderToken,
   })).data;
@@ -125,7 +125,7 @@ const axio = axios.create({
 
   res = (await axio.post(`${baseUrl}/message/public`, {
     address: sender.address ,
-    message: `@${screenName} send @user $0.05 #TipDai`,
+    message: `@${screenName} send @user gze0.05 #TipDai`,
     recipientId: recipientUser.id,
     token: senderToken,
   })).data;
@@ -152,14 +152,14 @@ const axio = axios.create({
 
   results.tipOne = axio.post(`${baseUrl}/message/public`, {
     address: sender.address ,
-    message: `@${screenName} send @user $0.05 #TipDai`,
+    message: `@${screenName} send @user $gze0.05 #TipDai`,
     recipientId: recipientUser.id,
     token: senderToken,
   });
 
   results.tipTwo = axio.post(`${baseUrl}/message/public`, {
     address: sender.address ,
-    message: `@${screenName} send @user $0.05 #TipDai`,
+    message: `@${screenName} send @user GZE0.05 #TipDai`,
     recipientId: recipientUser.id,
     token: senderToken,
   });

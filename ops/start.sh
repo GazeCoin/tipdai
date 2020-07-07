@@ -162,8 +162,7 @@ services:
       MODE: dev
       UPSTREAM_URL: bot:3001
     ports:
-      - "80:80"
-      - "443:443"
+      - "8086:80"
     volumes:
       - certs:/etc/letsencrypt
 
