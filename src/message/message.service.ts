@@ -83,7 +83,7 @@ export class MessageService {
       }
     }
     return [
-      `Your balance is $0.00. Send a link payment (generated from wallet.dreamchannel.io) to get started.`,
+      `Your balance is $0.00. Send a link payment (generated from https://card.gazecoin.xyz) to get started.`,
     ];
   }
 
