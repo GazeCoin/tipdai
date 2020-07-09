@@ -46,7 +46,7 @@ export class TipService {
         this.log.info(`Sender balance $0.00 (no deposits) is less than tip amount of ${amount}`);
         newTip.result = "INSUFFICIENT_BALANCE";
         await this.tipRepo.save(newTip);
-        return `You don't have a high enough balance to send a $${amount} tip, ` +
+        return `You don't have a high enough balance to send a GZE${amount} tip, ` +
           `DM me a link payment to increase your balance & then try again.`;
       }
       if (sender.cashout.status !== "PENDING") {
@@ -94,7 +94,7 @@ export class TipService {
       this.log.info(`Saved new recipient data`);
       newTip.result = "SUCCESS";
       await this.tipRepo.save(newTip);
-      return `Success! A tip of $${amount} has been transfered.\n\n` +
+      return `Success! A tip of GZE${amount} has been transfered.\n\n` +
         `@${recipient.twitterName}, you can now send tips or DM me to cashout.\n\n` +
         `@${sender.twitterName}, your old cashout link has been redeemed, DM me for a new one`;
     } catch (e) {
