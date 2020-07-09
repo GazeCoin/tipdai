@@ -19,7 +19,7 @@ const twitterMention = (username?: string): string =>
 
 export const twitterTipRegex = (botName?) =>
   new RegExp(
-    `.*${twitterMention(botName)}.*?${twitterMention()}.*?${amountPattern}.*?#TipDai`,
+    `.*${twitterMention(botName)}.*?${twitterMention()}.*?${amountPattern}.*?`,
     "i",
   );
 

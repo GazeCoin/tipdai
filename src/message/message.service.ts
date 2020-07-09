@@ -77,13 +77,13 @@ export class MessageService {
       sender.cashout = await this.payment.updatePayment(sender.cashout);
       if (sender.cashout.status === "PENDING") {
         return [
-          `Balance: $${sender.cashout.amount}. Cashout anytime by clicking the following link:\n\n` +
+          `Balance: GZE${sender.cashout.amount}. Cashout anytime by clicking the following link:\n\n` +
           `${this.config.paymentUrl}?paymentId=${sender.cashout.paymentId}&secret=${sender.cashout.secret}`,
         ];
       }
     }
     return [
-      `Your balance is $0.00. Send a link payment (generated from https://card.gazecoin.xyz) to get started.`,
+      `Your balance is GZE0.00. Send a link payment (generated from https://card.gazecoin.xyz) to get started.`,
     ];
   }
 

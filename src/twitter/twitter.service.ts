@@ -67,9 +67,9 @@ export class TwitterService {
       try {
         this.log.debug(`Trying to tip..`);
         const recipientUser = entities.user_mentions.find(
-          user => user.screen_name === tipInfo[1],
+          user => user.screen_name === tipInfo[2],
         );
-        const recipient = await this.userRepo.getTwitterUser(recipientUser.id_str, tipInfo[1]);
+        const recipient = await this.userRepo.getTwitterUser(recipientUser.id_str, tipInfo[2]);
         const response = await this.message.handlePublicMessage(
           sender,
           recipient,
