@@ -46,7 +46,7 @@ export class TelegramService {
         this.botId = res.result.username;
         this.log.info(`Bot ID set to ${this.botId}`);
 
-        axio.get(`${telegramBaseUrl}/getWebhookInfo`).then( resolve => {
+        axio.get(`${telegramBaseUrl}/getWebhookInfo`).then( result => {
           res = result.data;
 
           this.log.info(`${JSON.stringify(res)}`);
