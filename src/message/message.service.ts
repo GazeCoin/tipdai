@@ -31,7 +31,7 @@ export class MessageService {
     amount: DecString,
     message: string,
   ): Promise<string | undefined> => {
-    this.log.info(`Sending $${amount} tip from ${sender.twitterName || sender.address} to ${recipient.twitterName || recipient.address}`);
+    this.log.info(`Sending GZE${amount} tip from ${sender.twitterName || sender.address} to ${recipient.twitterName || recipient.address}`);
     const result = await this.tip.handleTip(sender, recipient, amount, message);
     this.log.debug(`Got tip result: ${JSON.stringify(result)}`);
     return result;
