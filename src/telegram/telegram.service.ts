@@ -38,27 +38,26 @@ export class TelegramService {
     });
     
     const telegramBaseUrl = `https://api.telegram.org/bot${this.config.telegramToken}`;
-    void (async () => {
-      let res = (await axio.get(`${telegramBaseUrl}/getMe`, )).data;
+    
+    axio.get(`${telegramBaseUrl}/getMe`, ).then((result) => {
+      let res = result.data
+      
       if (res.result) {
-        this.botId = res.result.username ;
+        this.botId = res.result.username;
+
+        axio.post(`${telegramBaseUrl}/setWebhook`, {
+          url: this.config.webhooks.telegram.url ,
+          allowed_updates: ["Message", "User", "BotCommand"]
+        }).then(resolve => {
+          this.log.info("Successfully logged in. We're ready to go!");
+        });
       } else {
         this.log.warn(`Error getting bot ID from telegram. ${JSON.stringify(res)}`);
-      }
-    });
+      };
 
-    void (async () => {
-      let res = (await axio.post(`${telegramBaseUrl}/setWebhook`, {
-        url: this.config.webhooks.telegram.url ,
-        allowed_updates: ["Message", "User", "BotCommand"]
-      }));
+    }).catch((reject) => {
+      this.log.warn(`Error requesting bot ID from telegram. ${JSON.stringify(reject)}`);
     });
-
-    if (this.botId) {
-      this.log.info("Successfully logged in. We're ready to go!");
-    } else {
-      this.log.warn("Telegram Bot init failed");
-    };
 
     // // Getting all updates
     // this.airgram.use((ctx, next) => {
