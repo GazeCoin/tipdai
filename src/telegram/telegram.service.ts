@@ -44,13 +44,20 @@ export class TelegramService {
       
       if (res.result) {
         this.botId = res.result.username;
+        this.log.info(`Bot ID set to ${this.botId}`);
 
-        axio.post(`${telegramBaseUrl}/setWebhook`, {
-          url: this.config.webhooks.telegram.url ,
-          allowed_updates: ["Message", "User", "BotCommand"]
-        }).then(resolve => {
-          this.log.info("Successfully logged in. We're ready to go!");
+        axio.get(`${telegramBaseUrl}/getWebhookInfo`).then( resolve => {
+          res = result.data;
+
+          this.log.info(`${JSON.stringify(res)}`);
         });
+
+        // axio.post(`${telegramBaseUrl}/setWebhook`, {
+        //   url: this.config.webhooks.telegram.url ,
+        //   allowed_updates: ["Message", "User", "BotCommand"]
+        // }).then(resolve => {
+        //   this.log.info("Successfully logged in. We're ready to go!");
+        // });
       } else {
         this.log.warn(`Error getting bot ID from telegram. ${JSON.stringify(res)}`);
       };
