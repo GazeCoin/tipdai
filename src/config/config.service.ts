@@ -31,6 +31,9 @@ const env = {
   twitterConsumerKey: process.env.TWITTER_CONSUMER_KEY,
   twitterConsumerSecret: process.env.TWITTER_CONSUMER_SECRET,
   twitterWebhookId: process.env.TWITTER_WEBHOOK_ID,
+  telegramAppId: process.env.TELEGRAM_APP_ID,
+  telegramAppHash: process.env.TELEGRAM_APP_HASH,
+  telegramCommand: process.env.TELEGRAM_COMMAND,
 };
 
 const cfIndex = "25446";
@@ -99,6 +102,9 @@ export class ConfigService {
         env: "test",
         id: env.twitterWebhookId,
         url: `${env.twitterCallbackUrl}/webhooks/twitter`,
+      },
+      telegram: {
+        url: `${env.twitterCallbackUrl}/webhooks/telegram/${this.telegramToken}`,
       },
     };
   }

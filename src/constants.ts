@@ -23,6 +23,15 @@ export const twitterTipRegex = (botName?) =>
     "i",
   );
 
+const telegramMention = (username?: string): string =>
+  twitterMention(username);
+
+export const telegramTipRegex = (botName?: string): RegExp =>
+new RegExp(
+  `.*${telegramMention(botName)}.*?${telegramMention()}.*?${amountPattern}.*?`,
+  "i",
+);
+
 const exampleTwitterPrivateMessage = {
   type: "message_create",
   id: "1182505754852347908",

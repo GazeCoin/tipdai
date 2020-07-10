@@ -1,10 +1,11 @@
 import * as crypto from "crypto";
-import { Body, Controller, Get, Post, Query } from "@nestjs/common";
+import { Body, Controller, Get, Post, Query, Param } from "@nestjs/common";
 
 import { ConfigService } from "../config/config.service";
 import { LoggerService } from "../logger/logger.service";
 import { QueueService } from "../queue/queue.service";
 import { TwitterService } from "../twitter/twitter.service";
+import { TelegramService } from "../telegram/telegram.service";
 import { UserRepository } from "../user/user.repository";
 
 type TwitterCRCResponse = {
@@ -53,4 +54,27 @@ export class WebhooksController {
     }
 
   }
+
+  @Post("telegram/:token")
+  async handleTelegramEvent(@Param('token') token: string, @Query() query: any, @Body() body: any): Promise<any> {
+    this.log.debug(`Got TG token ${token}`);
+    const keys = Object.keys(body).filter(key => key !== "for_user_id");
+    this.log.debug(`Got telegram updates: ${JSON.stringify(keys)}`);
+
+    // if (body.tweet_create_events) {
+    //   body.tweet_create_events.forEach(tweet => {
+    //     if (tweet.user.id_str === this.config.twitterBotUserId) { return; }
+    //     this.queueService.enqueue(async () => this.twitter.parseTweet(tweet));
+    //   });
+    // }
+
+    // if (body.direct_message_events) {
+    //   body.direct_message_events.forEach(dm => {
+    //     if (dm.message_create.sender_id === this.config.twitterBotUserId) { return; }
+    //     this.queueService.enqueue(async () => this.twitter.parseDM(dm));
+    //   });
+    // }
+
+  }
+
 }
