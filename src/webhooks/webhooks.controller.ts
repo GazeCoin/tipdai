@@ -56,8 +56,8 @@ export class WebhooksController {
   }
 
   @Post("telegram/:token")
-  async handleTelegramEvent(@Param('token') token: string, @Query() query: any, @Body() body: any): Promise<any> {
-    this.log.debug(`Got TG token ${token}`);
+  async handleTelegramEvent(@Param('token') token: string, @Body() body: any): Promise<any> {
+    this.log.info(`Got TG token ${token} body:${JSON.stringify(body)}`);
     const keys = Object.keys(body).filter(key => key !== "for_user_id");
     this.log.debug(`Got telegram updates: ${JSON.stringify(keys)}`);
 
