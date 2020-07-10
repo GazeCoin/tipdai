@@ -40,7 +40,11 @@ export class TelegramService {
     const telegramBaseUrl = `https://api.telegram.org/bot${this.config.telegramToken}`;
     void (async () => {
       let res = (await axio.get(`${telegramBaseUrl}/getMe`, )).data;
-      this.botId = res.result ? res.result.username : undefined;
+      if (res.result) {
+        this.botId = res.result.username ;
+      } else {
+        this.log.warn(`Error getting bot ID from telegram. ${JSON.stringify(res)}`);
+      }
     });
 
     void (async () => {
@@ -52,6 +56,8 @@ export class TelegramService {
 
     if (this.botId) {
       this.log.info("Successfully logged in. We're ready to go!");
+    } else {
+      this.log.warn("Telegram Bot init failed");
     };
 
     // // Getting all updates
