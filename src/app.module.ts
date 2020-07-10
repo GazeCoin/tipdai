@@ -14,6 +14,7 @@ import { TipModule } from "./tip/tip.module";
 import { TwitterModule } from "./twitter/twitter.module";
 import { UserModule } from "./user/user.module";
 import { WebhooksModule } from "./webhooks/webhooks.module";
+import { TelegramModule } from "./telegram/telegram.module";
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { WebhooksModule } from "./webhooks/webhooks.module";
     TwitterModule,
     UserModule,
     WebhooksModule,
+    TelegramModule,
   ],
   controllers: [AppController],
   providers: [AppService],
