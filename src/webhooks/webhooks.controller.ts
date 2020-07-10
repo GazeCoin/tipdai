@@ -1,5 +1,5 @@
 import * as crypto from "crypto";
-import { Body, Controller, Get, Post, Query, Param } from "@nestjs/common";
+import { Body, Controller, Get, Post, Query, Param, Res, HttpStatus } from "@nestjs/common";
 
 import { ConfigService } from "../config/config.service";
 import { LoggerService } from "../logger/logger.service";
@@ -56,8 +56,14 @@ export class WebhooksController {
   }
 
   @Post("telegram/:token")
-  async handleTelegramEvent(@Param('token') token: string, @Body() body: any): Promise<any> {
+  async handleTelegramEvent(@Param('token') token: string, @Body() body: any, @Res() response: any): Promise<any> {
     this.log.info(`Got TG token ${token} body:${JSON.stringify(body)}`);
+    // Check validity of the token
+    if (token !== this.config.telegramToken) {
+      this.log.warn(`Invalid token in webhook callback URL. ${token}`);
+      response.status(HttpStatus.FORBIDDEN).send();
+      return;
+    }
     const keys = Object.keys(body).filter(key => key !== "for_user_id");
     this.log.debug(`Got telegram updates: ${JSON.stringify(keys)}`);
 
