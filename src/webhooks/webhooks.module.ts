@@ -5,6 +5,7 @@ import { ConfigModule } from "../config/config.module";
 import { LoggerModule } from "../logger/logger.module";
 import { QueueModule } from "../queue/queue.module";
 import { TwitterModule } from "../twitter/twitter.module";
+import { TelegramModule } from "../telegram/telegram.module";
 import { UserRepository } from "../user/user.repository";
 
 import { WebhooksController } from "./webhooks.controller";
@@ -16,6 +17,7 @@ import { WebhooksController } from "./webhooks.controller";
     LoggerModule,
     QueueModule,
     TwitterModule,
+    TelegramModule,
     TypeOrmModule.forFeature([UserRepository]),
   ],
 })
