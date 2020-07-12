@@ -1,6 +1,6 @@
 import { stringify } from "@connext/utils";
 import { Injectable } from "@nestjs/common";
-import axios from 'axios';
+import axios, { AxiosInstance } from 'axios';
 
 import { ConfigService } from "../config/config.service";
 import { LoggerService } from "../logger/logger.service";
@@ -15,12 +15,16 @@ const https = require('https');
 export class TelegramService {
   private inactive: boolean = false;
   private botId: string;
+  private twitterBot: any;
+  private telegramBaseUrl: string;
+  private axio: AxiosInstance;
 
   constructor(
     private readonly config: ConfigService,
     private readonly log: LoggerService,
     private readonly userRepo: UserRepository,
     private readonly message: MessageService,
+
   ) {
     this.log.setContext("TelegramService");
     this.log.info(`Good morning!`);
@@ -31,24 +35,22 @@ export class TelegramService {
       return;
     }
 
-    const axio = axios.create({
+    this.axio = axios.create({
       httpsAgent: new https.Agent({  
         rejectUnauthorized: false
       })
     });
     
-    const telegramBaseUrl = `https://api.telegram.org/bot${this.config.telegramToken}`;
+    this.telegramBaseUrl = `https://api.telegram.org/bot${this.config.telegramToken}`;
     
-    axio.get(`${telegramBaseUrl}/getMe`, ).then((result) => {
+    this._get('getMe', ).then((result) => {
       let res = result.data
       
       if (res.result) {
         this.botId = res.result.username;
         this.log.info(`Bot ID set to ${this.botId}`);
 
-        axio.get(`${telegramBaseUrl}/getWebhookInfo`).then( result => {
-          res = result.data;
-
+        this._get('getWebhookInfo').then( res => {
           this.log.info(`Webhook info: ${JSON.stringify(res)}`);
 
           // Check existing webhooks. Look for our URL
@@ -59,10 +61,10 @@ export class TelegramService {
             }
           }
 
-          axio.post(`${telegramBaseUrl}/setWebhook`, {
+          this._post('setWebhook', {
             url: this.config.webhooks.telegram.url ,
             allowed_updates: ["message"]
-          }).then(resolve => {
+          }).then(() => {
             this.log.info("Webhook set. We're ready to go!");
           });
         });
@@ -75,4 +77,124 @@ export class TelegramService {
     });
 
   }
+
+  // Public messafes - inline chat ??
+  public parseMessage = async (message: any): Promise<any> => {
+    this.log.debug(`Parsing message: ${JSON.stringify(message)}`);
+     const sender = await this.userRepo.getTelegramUser(message.from.username);
+  //   const entities = tweet.extended_tweet ? tweet.extended_tweet.entities : tweet.entities;
+  //   const tweetText = tweet.extended_tweet ? tweet.extended_tweet.full_text : tweet.text;
+  //   const tipInfo = tweetText.match(twitterTipRegex((await this.getUser()).twitterName));
+  //   this.log.debug(`Got tipInfo ${JSON.stringify(tipInfo)}`);
+  //   if (tipInfo && tipInfo[3]) {
+  //     try {
+  //       this.log.debug(`Trying to tip..`);
+  //       const recipientUser = entities.user_mentions.find(
+  //         user => user.screen_name === tipInfo[2],
+  //       );
+  //       const recipient = await this.userRepo.getTwitterUser(recipientUser.id_str, tipInfo[2]);
+  //       const response = await this.message.handlePublicMessage(
+  //         sender,
+  //         recipient,
+  //         tipInfo[3],
+  //         tweetText,
+  //       );
+  //       if (response) {
+  //         await this.tweet(
+  //          `@${tweet.user.screen_name} ${response}`,
+  //           tweet.id_str,
+  //         );
+  //       }
+  //     } catch (e) {
+  //       this.log.error(e);
+  //       await this.tweet(
+  //        `@${tweet.user.screen_name} Oh no, something went wrong. @glamperd can you please fix me?`,
+  //         tweet.id_str,
+  //       );
+  //     }
+  //   } else {
+  //     this.log.info(`Tweet isn't a well formatted tip, ignoring: ${tweetText}`);
+  //   }
+  }
+
+  public parseDM = async (dm: any): Promise<any> => {
+    this.log.debug(`Parsing dm: ${JSON.stringify(dm)}`);
+    const senderId = dm.message.from.username;
+    const chatId = dm.message.chat.id;
+    let sender = await this.userRepo.getTelegramUser(senderId);
+    let message = dm.message.text;
+    // Telegram has parsed the command and recipient username. Get them.
+    let command: string, recipientTag: string, amount: string;
+    dm.entities.forEach(entity => {
+      const e = message.substring(entity.offset, entity.offset + entity.length);
+      if ("bot_command" === entity.type) {
+        command = e;
+      } else if ("mention" === entity.type) {
+        recipientTag = e;
+      }
+    });
+    switch(command) {
+      case '/send': {
+        const recipient = await this.userRepo.getTelegramUser(recipientTag);
+        const messageInfo = dm.text.match(telegramTipRegex());
+        amount = messageInfo[3];
+        const reply = {
+          chat_id: sender.telegramId,
+          text: '',
+          disable_web_page_preview: true,          
+        };
+        if (!messageInfo || !amount || !recipient) {
+          this.log.info(`Improperly formatted tip, ignoring`);
+          reply.text = 'Huh??? :confused:';
+          await this._post('sendMessage', reply);
+          return;
+        }
+        this.log.debug(`Message regex info: ${stringify(messageInfo)}`);
+    
+        const response = await this.message.handlePublicMessage(
+          sender,
+          recipient,
+          amount,
+          message,
+        );
+        // Reply with the result
+        reply.text = response;
+        await this._post('sendMessage', reply);
+        break;
+      }
+    }
+  }
+
+  public getUserByName = async (chat_id, screen_name) => {
+    if (this.inactive) { return; }
+    const res = await this._post('getChatMember', {"chat_id": chat_id, "user_id":screen_name});
+    return res;
+  }
+
+  _get = (method: string): Promise<any> => {
+    this.log.debug(`GET URL: ${method}`);
+    const url = `${this.telegramBaseUrl}/${method}`;
+    return new Promise((resolve, reject) => {
+      this.axio.get(url).then( (result) => {
+        let res = result.data
+        resolve(res);
+      }).catch((err) => {
+        reject(err)
+      });
+    });
+  }
+
+  _post = (method: string, data: any = {}): Promise<any> => {
+    const url = `${this.telegramBaseUrl}/${method}`;
+    this.log.debug(`POST URL: ${url}`);
+    return new Promise((resolve, reject) => {
+      this.axio.post(url, data).then((result) => {
+        let res = result.data
+        resolve(res);
+      }).catch((err) => {
+        reject(err)
+      })
+    });
+  }
+
 }

@@ -28,7 +28,7 @@ const telegramMention = (username?: string): string =>
 
 export const telegramTipRegex = (botName?: string): RegExp =>
 new RegExp(
-  `.*${telegramMention(botName)}.*?${telegramMention()}.*?${amountPattern}.*?`,
+  `(\/[a-zA-Z0-9]*).*?${telegramMention()}.*?${amountPattern}.*?`,
   "i",
 );
 

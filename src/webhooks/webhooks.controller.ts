@@ -19,6 +19,7 @@ export class WebhooksController {
     private readonly log: LoggerService,
     private readonly queueService: QueueService,
     private readonly twitter: TwitterService,
+    private readonly telegram: TelegramService,
     private readonly userRepo: UserRepository,
   ) {
     this.log.setContext("WebhooksController");
@@ -64,23 +65,15 @@ export class WebhooksController {
       response.status(HttpStatus.FORBIDDEN).send();
       return;
     }
-    const keys = Object.keys(body).filter(key => key !== "for_user_id");
-    this.log.debug(`Got telegram updates: ${JSON.stringify(keys)}`);
+    //const keys = Object.keys(body).filter(key => key !== "for_user_id");
+    this.log.debug(`Got telegram updates: ${JSON.stringify(body)}`);
 
-    // if (body.tweet_create_events) {
-    //   body.tweet_create_events.forEach(tweet => {
-    //     if (tweet.user.id_str === this.config.twitterBotUserId) { return; }
-    //     this.queueService.enqueue(async () => this.twitter.parseTweet(tweet));
-    //   });
-    // }
-
-    // if (body.direct_message_events) {
-    //   body.direct_message_events.forEach(dm => {
-    //     if (dm.message_create.sender_id === this.config.twitterBotUserId) { return; }
-    //     this.queueService.enqueue(async () => this.twitter.parseDM(dm));
-    //   });
-    // }
-
+    if (body.message.from.username === this.config.telegramBotId) { return; }
+    if ('private' === body.message.chat.type) {
+      this.queueService.enqueue(async () => this.telegram.parseDM(body.message));
+    } else {
+      this.queueService.enqueue(async () => this.telegram.parseMessage(body.message));
+    }
   }
 
 }
