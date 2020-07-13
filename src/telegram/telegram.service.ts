@@ -142,7 +142,7 @@ export class TelegramService {
         break;
       }
       case '/help': {
-        this.handleHelp(sender);
+        this.handleHelp(dm);
         break;
       }
       case '/balance': {
@@ -160,17 +160,16 @@ export class TelegramService {
     }
   }
 
-  private handleHelp = async (sender: User, ) => {
+  private handleHelp = async (message: Message) => {
     const reply = {
-      chat_id: sender.telegramId,
-      text: '',
-      disable_web_page_preview: true,   
+      chat_id: message.chat.id,
+      text: `I can help you do these things: \n
+        /balance Request your current balance and withdraw link\n
+        /send To send some Gazecoin to another Telegram user\n
+        /redeem To deposit some funds using a link obtained from ${this.config.paymentUrl}`,
+      disable_web_page_preview: true,
     };
 
-    reply.text = `I can help you do these things: \n
-      /balance Request your current balance and withdraw link\n
-      /send To send some Gazecoin to another Telegram user\n
-      /redeem To deposit some funds using a link obtained from ${this.config.paymentUrl}`;
     await this._post('sendMessage', reply);
   }
 
@@ -179,7 +178,7 @@ export class TelegramService {
     const messageInfo = message.text.match(telegramTipRegex());
     const amount = messageInfo[3];
     const reply = {
-      chat_id: sender.telegramId,
+      chat_id: message.chat.id,
       text: '',
       disable_web_page_preview: true,          
     };
