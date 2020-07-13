@@ -78,7 +78,7 @@ export class WebhooksController {
         case (typeof(update.channel_post) !== 'undefined'): {
           msg = update.channel_post;
 
-          if (msg.from.username === this.config.telegramBotId) { return; }
+          if (!msg.from || msg.from.username === this.config.telegramBotId) { return; }
           //if ('private' === update.message.chat.type) {
             this.queueService.enqueue(async () => this.telegram.parseDM(msg));
           //} else {
