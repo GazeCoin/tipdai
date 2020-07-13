@@ -1,6 +1,7 @@
 import { stringify } from "@connext/utils";
 import { Injectable } from "@nestjs/common";
 import axios, { AxiosInstance } from 'axios';
+import { User as TelegramUser, Chat, Message, WebhookInfo } from 'telegram-typings';
 
 import { ConfigService } from "../config/config.service";
 import { LoggerService } from "../logger/logger.service";
@@ -50,12 +51,13 @@ export class TelegramService {
         this.botId = res.result.username;
         this.log.info(`Bot ID set to ${this.botId}`);
 
-        this._get('getWebhookInfo').then( res => {
+        this._get('getWebhookInfo').then( (res) => {
           this.log.info(`Webhook info: ${JSON.stringify(res)}`);
 
           // Check existing webhooks. Look for our URL
           if (res.result) {
-            if (this.config.webhooks.telegram.url === res.result.url) {
+            const wh: WebhookInfo = res.result;
+            if (this.config.webhooks.telegram.url === wh.url) {
               this.log.info("Webhook already established. We're good to go.");
               return;
             }
@@ -63,7 +65,7 @@ export class TelegramService {
 
           this._post('setWebhook', {
             url: this.config.webhooks.telegram.url ,
-            allowed_updates: ["message"]
+            allowed_updates: ["message", "inline_chat", "channel_post"]
           }).then(() => {
             this.log.info("Webhook set. We're ready to go!");
           });
@@ -79,7 +81,7 @@ export class TelegramService {
   }
 
   // Public messafes - inline chat ??
-  public parseMessage = async (message: any): Promise<any> => {
+  public parseMessage = async (message: Message): Promise<any> => {
     this.log.debug(`Parsing message: ${JSON.stringify(message)}`);
      const sender = await this.userRepo.getTelegramUser(message.from.username);
   //   const entities = tweet.extended_tweet ? tweet.extended_tweet.entities : tweet.entities;
@@ -117,12 +119,12 @@ export class TelegramService {
   //   }
   }
 
-  public parseDM = async (dm: any): Promise<any> => {
+  public parseDM = async (dm: Message): Promise<any> => {
     this.log.debug(`Parsing dm: ${JSON.stringify(dm)}`);
-    const senderId = dm.message.from.username;
-    const chatId = dm.message.chat.id;
+    const senderId = dm.from.username;
+    const chatId = dm.chat.id;
     let sender = await this.userRepo.getTelegramUser(senderId);
-    let message = dm.message.text;
+    let message = dm.text;
     // Telegram has parsed the command and recipient username. Get them.
     let command: string, recipientTag: string, amount: string;
     dm.entities.forEach(entity => {

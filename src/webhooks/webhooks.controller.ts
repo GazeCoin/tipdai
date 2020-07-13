@@ -1,5 +1,6 @@
 import * as crypto from "crypto";
 import { Body, Controller, Get, Post, Query, Param, Res, HttpStatus } from "@nestjs/common";
+import { Update, Message } from 'telegram-typings';
 
 import { ConfigService } from "../config/config.service";
 import { LoggerService } from "../logger/logger.service";
@@ -57,22 +58,21 @@ export class WebhooksController {
   }
 
   @Post("telegram/:token")
-  async handleTelegramEvent(@Param('token') token: string, @Body() body: any, @Res() response: any): Promise<any> {
-    this.log.info(`Got TG token ${token} body:${JSON.stringify(body)}`);
+  async handleTelegramEvent(@Param('token') token: string, @Body() update: Update, @Res() response: any): Promise<any> {
+    this.log.debug(`Got TG token ${token} body:${JSON.stringify(update)}`);
     // Check validity of the token
     if (token !== this.config.telegramToken) {
       this.log.warn(`Invalid token in webhook callback URL. ${token}`);
       response.status(HttpStatus.FORBIDDEN).send();
       return;
     }
-    //const keys = Object.keys(body).filter(key => key !== "for_user_id");
-    this.log.debug(`Got telegram updates: ${JSON.stringify(body)}`);
+    this.log.debug(`Got telegram updates: ${JSON.stringify(update)}`);
 
-    if (body.message.from.username === this.config.telegramBotId) { return; }
-    if ('private' === body.message.chat.type) {
-      this.queueService.enqueue(async () => this.telegram.parseDM(body.message));
+    if (update.message.from.username === this.config.telegramBotId) { return; }
+    if ('private' === update.message.chat.type) {
+      this.queueService.enqueue(async () => this.telegram.parseDM(update.message));
     } else {
-      this.queueService.enqueue(async () => this.telegram.parseMessage(body.message));
+      this.queueService.enqueue(async () => this.telegram.parseMessage(update.message));
     }
   }
 
