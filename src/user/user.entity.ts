@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn, Brackets } from "typeorm";
 
 import { Payment } from "../payment/payment.entity";
 
@@ -25,4 +25,22 @@ export class User {
   @OneToOne(type => Payment, { eager: true })
   @JoinColumn()
   cashout: Payment;
+
+  getUsername(type?: string): string {
+    switch (type) {
+      case undefined: { // Return any non-null name or ID
+        return this.twitterName || this.twitterId || this.discordId || this.telegramId;
+      }
+      case 'twitter': {
+        return this.twitterName || this.twitterId;
+      }
+      case 'discord': {
+        return this.discordId;
+      }
+      case 'telegram': {
+        return this.telegramId;
+      }
+    }
+    return null;
+  }
 }

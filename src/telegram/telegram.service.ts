@@ -163,10 +163,10 @@ export class TelegramService {
   private handleHelp = async (message: Message) => {
     const reply = {
       chat_id: message.chat.id,
-      text: `I can help you do these things: \n
-        /balance Request your current balance and withdraw link\n
-        /send To send some Gazecoin to another Telegram user\n
-        /redeem To deposit some funds using a link obtained from ${this.config.paymentUrl}`,
+      text: `I can help you do these things: 
+      /balance Request your current balance and withdraw link
+      /send To send some Gazecoin to another Telegram user
+      /redeem To deposit some funds using a link obtained from ${this.config.paymentUrl}`,
       disable_web_page_preview: true,
     };
 
@@ -176,7 +176,7 @@ export class TelegramService {
   private handleSend = async (sender: User, recipientTag: string, message: Message) => {
     const recipient = await this.userRepo.getTelegramUser(recipientTag);
     const messageInfo = message.text.match(telegramTipRegex());
-    const amount = messageInfo[3];
+    const amount = (messageInfo.length > 3) ? messageInfo[3] : undefined;
     const reply = {
       chat_id: message.chat.id,
       text: '',
@@ -211,7 +211,6 @@ export class TelegramService {
       chat_id: message.chat.id,
       text: response[0],
       disable_web_page_preview: true,
-      reply_to_message_id: message.message_id,
     };
 
     const sentMsg = await this._post('sendMessage', reply);
