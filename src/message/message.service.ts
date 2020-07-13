@@ -83,7 +83,7 @@ export class MessageService {
       }
     }
     return [
-      `Your balance is GZE0.00. Send a link payment (generated from https://card.gazecoin.xyz) to get started.`,
+      `Your balance is GZE0. Send a link payment (generated from https://card.gazecoin.xyz) to get started.`,
     ];
   }
 
