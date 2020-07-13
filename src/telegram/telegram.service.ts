@@ -208,12 +208,14 @@ export class TelegramService {
     );
     // Reply with the result
     const reply = {
-      chat_id: sender.telegramId,
+      chat_id: message.chat.id,
       text: response[0],
-      disable_web_page_preview: true,   
+      disable_web_page_preview: true,
+      reply_to_message_id: message.message_id,
     };
 
-    await this._post('sendMessage', reply);
+    const sentMsg = await this._post('sendMessage', reply);
+    this.log.debug(`Reply sent: ${sentMsg.text}`);
   }
 
   public getUserByName = async (chat_id, screen_name) => {
