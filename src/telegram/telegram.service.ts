@@ -66,7 +66,7 @@ export class TelegramService {
 
           this._post('setWebhook', {
             url: this.config.webhooks.telegram.url ,
-            allowed_updates: ["message", "inline_chat", "channel_post"]
+            allowed_updates: ["message", "inline_chat", "channel_post", "inline_query"]
           }).then(() => {
             this.log.info("Webhook set. We're ready to go!");
           });
@@ -123,11 +123,10 @@ export class TelegramService {
   public parseDM = async (dm: Message): Promise<any> => {
     this.log.debug(`Parsing dm: ${JSON.stringify(dm)}`);
     const senderId = dm.from.username;
-    const chatId = dm.chat.id;
     let sender = await this.userRepo.getTelegramUser(senderId);
     let message = dm.text;
     // Telegram has parsed the command and recipient username. Get them.
-    let command: string, recipientTag: string, amount: string;
+    let command: string, recipientTag: string;
     dm.entities.forEach(entity => {
       const e = message.substring(entity.offset, entity.offset + entity.length);
       if ("bot_command" === entity.type) {
@@ -176,7 +175,7 @@ export class TelegramService {
   private handleSend = async (sender: User, recipientTag: string, message: Message) => {
     const recipient = await this.userRepo.getTelegramUser(recipientTag);
     const messageInfo = message.text.match(telegramTipRegex());
-    const amount = (messageInfo.length > 3) ? messageInfo[3] : undefined;
+    const amount = (messageInfo && messageInfo.length > 3) ? messageInfo[3] : undefined;
     const reply = {
       chat_id: message.chat.id,
       text: '',
