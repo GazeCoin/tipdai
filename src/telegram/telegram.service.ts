@@ -1,7 +1,7 @@
 import { stringify } from "@connext/utils";
 import { Injectable } from "@nestjs/common";
 import axios, { AxiosInstance } from 'axios';
-import { User as TelegramUser, Chat, Message, WebhookInfo } from 'telegram-typings';
+import { User as TelegramUser, InlineQuery, Message, WebhookInfo } from 'telegram-typings';
 
 import { ConfigService } from "../config/config.service";
 import { LoggerService } from "../logger/logger.service";
@@ -45,8 +45,7 @@ export class TelegramService {
     
     this.telegramBaseUrl = `https://api.telegram.org/bot${this.config.telegramToken}`;
     
-    this._get('getMe', ).then((result) => {
-      let res = result.data
+    this._get('getMe').then((res) => {
       
       if (res.result) {
         this.botId = res.result.username;
@@ -82,8 +81,8 @@ export class TelegramService {
   }
 
   // Public messafes - inline chat ??
-  public parseMessage = async (message: Message): Promise<any> => {
-    this.log.debug(`Parsing message: ${JSON.stringify(message)}`);
+  public parseInlineQuery = async (message: InlineQuery): Promise<any> => {
+    this.log.debug(`Parsing query: ${JSON.stringify(message)}`);
      const sender = await this.userRepo.getTelegramUser(message.from.username);
   //   const entities = tweet.extended_tweet ? tweet.extended_tweet.entities : tweet.entities;
   //   const tweetText = tweet.extended_tweet ? tweet.extended_tweet.full_text : tweet.text;

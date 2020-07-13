@@ -70,12 +70,27 @@ export class WebhooksController {
     }
     this.log.debug(`Got telegram updates: ${JSON.stringify(update)}`);
     if (update.update_id > this.lastTelegramUpdateIdx) { // Ignore repeats
+      let msg: Message;
+      switch (true) {
+        case (typeof(update.message) !== 'undefined'): {
+          msg = update.message;
+        }
+        case (typeof(update.channel_post) !== 'undefined'): {
+          msg = update.channel_post;
 
-      if (update.message.from.username === this.config.telegramBotId) { return; }
-      if ('private' === update.message.chat.type) {
-        this.queueService.enqueue(async () => this.telegram.parseDM(update.message));
-      } else {
-        this.queueService.enqueue(async () => this.telegram.parseMessage(update.message));
+          if (msg.from.username === this.config.telegramBotId) { return; }
+          //if ('private' === update.message.chat.type) {
+            this.queueService.enqueue(async () => this.telegram.parseDM(msg));
+          //} else {
+          //  this.queueService.enqueue(async () => this.telegram.parseMessage(msg));
+          //}
+          break;
+        }
+        case (typeof(update.inline_query) !== 'undefined'): {
+          if (update.inline_query.from.username === this.config.telegramBotId) { return; }
+          this.queueService.enqueue(async () => this.telegram.parseInlineQuery(update.inline_query));
+          break;
+        }
       }
       this.lastTelegramUpdateIdx = update.update_id;
     }
