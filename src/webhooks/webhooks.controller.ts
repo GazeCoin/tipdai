@@ -15,13 +15,15 @@ type TwitterCRCResponse = {
 
 @Controller("webhooks")
 export class WebhooksController {
+  private lastTelegramUpdateIdx: number = -1;
+
   constructor(
     private readonly config: ConfigService,
     private readonly log: LoggerService,
     private readonly queueService: QueueService,
     private readonly twitter: TwitterService,
     private readonly telegram: TelegramService,
-    private readonly userRepo: UserRepository,
+    private readonly userRepo: UserRepository,    
   ) {
     this.log.setContext("WebhooksController");
   }
@@ -67,13 +69,17 @@ export class WebhooksController {
       return;
     }
     this.log.debug(`Got telegram updates: ${JSON.stringify(update)}`);
+    if (update.update_id > this.lastTelegramUpdateIdx) { // Ignore repeats
 
-    if (update.message.from.username === this.config.telegramBotId) { return; }
-    if ('private' === update.message.chat.type) {
-      this.queueService.enqueue(async () => this.telegram.parseDM(update.message));
-    } else {
-      this.queueService.enqueue(async () => this.telegram.parseMessage(update.message));
+      if (update.message.from.username === this.config.telegramBotId) { return; }
+      if ('private' === update.message.chat.type) {
+        this.queueService.enqueue(async () => this.telegram.parseDM(update.message));
+      } else {
+        this.queueService.enqueue(async () => this.telegram.parseMessage(update.message));
+      }
+      this.lastTelegramUpdateIdx = update.update_id;
     }
+    response.status(HttpStatus.OK).send();
   }
 
 }

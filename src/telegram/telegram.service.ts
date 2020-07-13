@@ -9,6 +9,7 @@ import { telegramTipRegex } from "../constants";
 import { MessageService } from "../message/message.service";
 import { UserRepository } from "../user/user.repository";
 import { User } from "../user/user.entity";
+import { IntegrationEditData } from "discord.js";
 
 const https = require('https');
 
@@ -215,7 +216,7 @@ export class TelegramService {
     };
 
     const sentMsg = await this._post('sendMessage', reply);
-    this.log.debug(`Reply sent: ${sentMsg.text}`);
+    this.log.debug(`Reply sent: ${JSON.stringify(sentMsg)}`);
   }
 
   public getUserByName = async (chat_id, screen_name) => {
