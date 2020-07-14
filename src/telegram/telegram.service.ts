@@ -265,7 +265,7 @@ export class TelegramService {
       chat_id: message.chat.id,
       text: '',
       disable_web_page_preview: true,
-      reply_markup: {force_reply: true},
+      //reply_markup: {force_reply: true},
     };
     if (!messageInfo || !amount || !recipient) {
       this.log.info(`Improperly formatted tip, ignoring`);

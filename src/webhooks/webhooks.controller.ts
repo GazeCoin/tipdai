@@ -96,7 +96,7 @@ export class WebhooksController {
         }
         case (typeof(update.inline_query) !== 'undefined'): {
           if (update.inline_query.from.username === this.config.telegramBotId) { return; }
-          this.queueService.enqueue(async () => this.telegram.parseInlineQuery(update.inline_query));
+          //this.queueService.enqueue(async () => this.telegram.parseInlineQuery(update.inline_query));
           break;
         }
         case (typeof(update.callback_query) !== 'undefined'): {
