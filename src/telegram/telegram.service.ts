@@ -176,14 +176,15 @@ export class TelegramService {
   private handleStart = async (message: Message) => {
     const reply = {
       chat_id: message.chat.id,
-      text: `I can help you do these things:`,
+      text: `Hi! Click an option.`,
       reply_markup: {
-        // ReplyKeyboardMarkup
-        keyboard: [
-        [{ text: 'Balance' }],
-        [{ text: 'Send' }],
-        [{ text: 'Redeem' }],
-        [{ text: 'Help' }]
+        // InlineKeyboardMarkup
+        inline_keyboard: [
+        [{ text: 'Balance', callback_data: 'balance' }],
+        [{ text: 'Send', callback_data: 'send' }],
+        [{ text: 'Redeem', callback_data: 'redeem' }],
+        [{ text: 'Withdraw', callback_data: 'withdraw' }],
+        [{ text: 'Help', callback_data: 'help' }]
         ],
       }
     };
