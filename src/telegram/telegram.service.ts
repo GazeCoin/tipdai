@@ -144,29 +144,36 @@ export class TelegramService {
           recipientTag = e;
         }
       });
+    } else {
+      command = dm.text;
     }
     switch(command) {
       case '/start': {
         this.handleStart(dm);
         break;
       }
-      case '/send': {
+      case '/send': {}
+      case 'Send': {
         this.handleSend(sender, recipientTag, dm);
         break;
       }
-      case '/help': {
+      case '/help': {}
+      case 'Help': {
         this.handleHelp(dm);
         break;
       }
-      case '/balance': {
+      case '/balance': {}
+      case 'Balance': {
         this.handleDM(sender, dm);
         break;
       }
-      case '/redeem': {
+      case '/redeem': {}
+      case 'Redeem': {
         this.handleDM(sender, dm);
         break;
       }
-      case '/withdraw': {
+      case '/withdraw': {}
+      case 'Withdraw': {
         //this.handleWithdraw(sender, recipientTag, amount, dm);
         break;
       }
@@ -180,10 +187,10 @@ export class TelegramService {
       reply_markup: {
         // InlineKeyboardMarkup
         inline_keyboard: [
-        [{ text: 'Balance', callback_data: 'balance' }],
-        [{ text: 'Send', callback_data: 'send' }],
-        [{ text: 'Redeem', callback_data: 'redeem' }],
-        [{ text: 'Withdraw', callback_data: 'withdraw' }],
+        [{ text: 'Balance', callback_data: 'balance' },
+        { text: 'Send', callback_data: 'send' }],
+        [{ text: 'Redeem', callback_data: 'redeem' },
+        { text: 'Withdraw', callback_data: 'withdraw' }],
         [{ text: 'Help', callback_data: 'help' }]
         ],
       }
