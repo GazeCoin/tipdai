@@ -204,9 +204,9 @@ export class TelegramService {
     const reply = {
       chat_id: message.chat.id,
       text: `I can help you do these things: 
-*/balance* Request your current balance and withdraw link
-*/send* To send some Gazecoin to another Telegram user
-*/redeem* To add to your funds using a link obtained from ${this.config.paymentUrl}`,
+*Balance* Request your current balance and withdraw link
+*Send* Send some Gazecoin to another Telegram user
+*Redeem* To add to your funds using a link obtained from [the Gazecoin payments site](${this.config.paymentUrl})`,
       parse_mode: 'MarkdownV2',
       disable_web_page_preview: true,
     };
