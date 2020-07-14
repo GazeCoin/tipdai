@@ -32,6 +32,12 @@ new RegExp(
   "i",
 );
 
+export const telegramQueryRegex = (botName?: string): RegExp =>
+  new RegExp(
+    `.*?${telegramMention()}.*?${amountPattern}.*?`,
+    "i",
+);
+
 const exampleTwitterPrivateMessage = {
   type: "message_create",
   id: "1182505754852347908",

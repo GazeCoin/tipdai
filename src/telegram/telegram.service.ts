@@ -1,15 +1,16 @@
 import { stringify } from "@connext/utils";
 import { Injectable } from "@nestjs/common";
 import axios, { AxiosInstance } from 'axios';
-import { User as TelegramUser, InlineQuery, Message, WebhookInfo } from 'telegram-typings';
+import { User as TelegramUser, InlineQuery, Message, WebhookInfo, InlineQueryResultArticle, InputTextMessageContent } from 'telegram-typings';
 
 import { ConfigService } from "../config/config.service";
 import { LoggerService } from "../logger/logger.service";
-import { telegramTipRegex } from "../constants";
+import { telegramTipRegex, telegramQueryRegex } from "../constants";
 import { MessageService } from "../message/message.service";
 import { UserRepository } from "../user/user.repository";
 import { User } from "../user/user.entity";
 import { IntegrationEditData } from "discord.js";
+import { ReplaySubject } from "rxjs";
 
 const https = require('https');
 
@@ -81,42 +82,48 @@ export class TelegramService {
   }
 
   // Public messafes - inline chat ??
-  public parseInlineQuery = async (message: InlineQuery): Promise<any> => {
-    this.log.debug(`Parsing query: ${JSON.stringify(message)}`);
-     const sender = await this.userRepo.getTelegramUser(message.from.username);
-  //   const entities = tweet.extended_tweet ? tweet.extended_tweet.entities : tweet.entities;
-  //   const tweetText = tweet.extended_tweet ? tweet.extended_tweet.full_text : tweet.text;
-  //   const tipInfo = tweetText.match(twitterTipRegex((await this.getUser()).twitterName));
-  //   this.log.debug(`Got tipInfo ${JSON.stringify(tipInfo)}`);
-  //   if (tipInfo && tipInfo[3]) {
-  //     try {
-  //       this.log.debug(`Trying to tip..`);
-  //       const recipientUser = entities.user_mentions.find(
-  //         user => user.screen_name === tipInfo[2],
-  //       );
-  //       const recipient = await this.userRepo.getTwitterUser(recipientUser.id_str, tipInfo[2]);
-  //       const response = await this.message.handlePublicMessage(
-  //         sender,
-  //         recipient,
-  //         tipInfo[3],
-  //         tweetText,
-  //       );
-  //       if (response) {
-  //         await this.tweet(
-  //          `@${tweet.user.screen_name} ${response}`,
-  //           tweet.id_str,
-  //         );
-  //       }
-  //     } catch (e) {
-  //       this.log.error(e);
-  //       await this.tweet(
-  //        `@${tweet.user.screen_name} Oh no, something went wrong. @glamperd can you please fix me?`,
-  //         tweet.id_str,
-  //       );
-  //     }
-  //   } else {
-  //     this.log.info(`Tweet isn't a well formatted tip, ignoring: ${tweetText}`);
-  //   }
+  public parseInlineQuery = async (query: InlineQuery): Promise<any> => {
+    this.log.debug(`Parsing query: ${JSON.stringify(query)}`);
+     const sender = await this.userRepo.getTelegramUser(query.from.username);
+     // Telegram has parsed the command and recipient username. Get them.
+     let command: string, recipientTag: string;
+     const messageInfo = query.query.match(telegramQueryRegex());
+     const amount = (messageInfo && messageInfo.length > 2) ? messageInfo[2] : undefined;
+     recipientTag = (messageInfo && messageInfo.length > 1) ? messageInfo[1] : undefined;
+     const recipient = await this.userRepo.getTelegramUser(recipientTag);
+     const reply = {
+       inline_query_id: query.id,
+       results: [],
+     };
+     if (!messageInfo || !amount || !recipient) {
+       this.log.info(`Improperly formatted request, ignoring`);
+       //reply.results.push(new InputTextMessageContent('Huh??? :confused:'));
+       reply.results = [{
+         'type': 'Article',
+          'id':'1', 
+          'title':'Huh?',
+          'input_message_content': {'message_text': 'Huh???'},
+       }];
+       await this._post('answerInlineQuery', reply);
+       return;
+     }
+     this.log.debug(`Message regex info: ${stringify(messageInfo)}`);
+ 
+     const response = await this.message.handlePublicMessage(
+       sender,
+       recipient,
+       amount,
+       query.query,
+     );
+     // Reply with the result
+     //reply.text = response;
+     reply.results = [{
+      'type': 'Article',
+       'id':'1', 
+       'title':'Success',
+       'input_message_content': {'message_text': response},
+    }];
+  await this._post('answerInlineQuery', reply);
   }
 
   public parseDM = async (dm: Message): Promise<any> => {
@@ -162,9 +169,9 @@ export class TelegramService {
     const reply = {
       chat_id: message.chat.id,
       text: `I can help you do these things: 
-      /balance Request your current balance and withdraw link
-      /send To send some Gazecoin to another Telegram user
-      /redeem To deposit some funds using a link obtained from ${this.config.paymentUrl}`,
+*/balance* Request your current balance and withdraw link
+*/send* To send some Gazecoin to another Telegram user
+*/redeem* To add to your funds using a link obtained from ${this.config.paymentUrl}`,
       disable_web_page_preview: true,
     };
 
