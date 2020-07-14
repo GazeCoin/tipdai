@@ -94,6 +94,7 @@ export class TelegramService {
      const reply = {
        inline_query_id: query.id,
        results: [],
+       switch_pm_text: undefined,
      };
      if (!messageInfo || !amount || !recipient) {
        this.log.info(`Improperly formatted request, ignoring`);
@@ -120,9 +121,10 @@ export class TelegramService {
      reply.results = [{
       'type': 'Article',
        'id':'1', 
-       'title':'Success',
+       'title':'Success! Click me.',
        'input_message_content': {'message_text': response},
-    }];
+      }];
+      reply.switch_pm_text = 'See your updated balance';
   await this._post('answerInlineQuery', reply);
   }
 
@@ -133,15 +135,21 @@ export class TelegramService {
     let message = dm.text;
     // Telegram has parsed the command and recipient username. Get them.
     let command: string, recipientTag: string;
-    dm.entities.forEach(entity => {
-      const e = message.substring(entity.offset, entity.offset + entity.length);
-      if ("bot_command" === entity.type) {
-        command = e;
-      } else if ("mention" === entity.type) {
-        recipientTag = e;
-      }
-    });
+    if (dm.entities) {
+      dm.entities.forEach(entity => {
+        const e = message.substring(entity.offset, entity.offset + entity.length);
+        if ("bot_command" === entity.type) {
+          command = e;
+        } else if ("mention" === entity.type) {
+          recipientTag = e;
+        }
+      });
+    }
     switch(command) {
+      case '/start': {
+        this.handleStart(dm);
+        break;
+      }
       case '/send': {
         this.handleSend(sender, recipientTag, dm);
         break;
@@ -165,6 +173,25 @@ export class TelegramService {
     }
   }
 
+  private handleStart = async (message: Message) => {
+    const reply = {
+      chat_id: message.chat.id,
+      text: `I can help you do these things:`,
+      reply_markup: {
+        // ReplyKeyboardMarkup
+        keyboard: [
+        [{ text: 'Balance' }],
+        [{ text: 'Send' }],
+        [{ text: 'Redeem' }],
+        [{ text: 'Help' }]
+        ],
+      }
+    };
+
+    await this._post('sendMessage', reply);
+  }
+
+
   private handleHelp = async (message: Message) => {
     const reply = {
       chat_id: message.chat.id,
@@ -172,6 +199,7 @@ export class TelegramService {
 */balance* Request your current balance and withdraw link
 */send* To send some Gazecoin to another Telegram user
 */redeem* To add to your funds using a link obtained from ${this.config.paymentUrl}`,
+      parse_mode: 'MarkdownV2',
       disable_web_page_preview: true,
     };
 
