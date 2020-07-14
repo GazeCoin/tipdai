@@ -1,7 +1,8 @@
 import { stringify } from "@connext/utils";
 import { Injectable } from "@nestjs/common";
 import axios, { AxiosInstance } from 'axios';
-import { User as TelegramUser, InlineQuery, Message, WebhookInfo, InlineQueryResultArticle, InputTextMessageContent } from 'telegram-typings';
+import { User as TelegramUser, InlineQuery, Message, WebhookInfo, CallbackQuery, 
+  InlineQueryResultArticle, InputTextMessageContent } from 'telegram-typings';
 
 import { ConfigService } from "../config/config.service";
 import { LoggerService } from "../logger/logger.service";
@@ -66,7 +67,7 @@ export class TelegramService {
 
           this._post('setWebhook', {
             url: this.config.webhooks.telegram.url ,
-            allowed_updates: ["message", "inline_chat", "channel_post", "inline_query"]
+            allowed_updates: ["message", "inline_chat", "channel_post", "inline_query", "callback_query"]
           }).then(() => {
             this.log.info("Webhook set. We're ready to go!");
           });
@@ -85,7 +86,6 @@ export class TelegramService {
   public parseInlineQuery = async (query: InlineQuery): Promise<any> => {
     this.log.debug(`Parsing query: ${JSON.stringify(query)}`);
      const sender = await this.userRepo.getTelegramUser(query.from.username);
-     // Telegram has parsed the command and recipient username. Get them.
      let command: string, recipientTag: string;
      const messageInfo = query.query.match(telegramQueryRegex());
      const amount = (messageInfo && messageInfo.length > 2) ? messageInfo[2] : undefined;
@@ -128,6 +128,52 @@ export class TelegramService {
   await this._post('answerInlineQuery', reply);
   }
 
+  // Public messafes - inline chat ??
+  public parseCallbackQuery = async (query: CallbackQuery): Promise<any> => {
+    this.log.debug(`Parsing query: ${JSON.stringify(query)}`);
+     const sender = await this.userRepo.getTelegramUser(query.from.username);
+    //  let command: string, recipientTag: string;
+    //  const messageInfo = query.query.match(telegramQueryRegex());
+    //  const amount = (messageInfo && messageInfo.length > 2) ? messageInfo[2] : undefined;
+    //  recipientTag = (messageInfo && messageInfo.length > 1) ? messageInfo[1] : undefined;
+    //  const recipient = await this.userRepo.getTelegramUser(recipientTag);
+     const reply = {
+       callback_query_id: query.id,
+       text: 'answer',
+
+     };
+    //  if (!messageInfo || !amount || !recipient) {
+    //    this.log.info(`Improperly formatted request, ignoring`);
+    //    //reply.results.push(new InputTextMessageContent('Huh??? :confused:'));
+    //    reply.results = [{
+    //      'type': 'Article',
+    //       'id':'1', 
+    //       'title':'Huh?',
+    //       'input_message_content': {'message_text': 'Huh???'},
+    //    }];
+    //    await this._post('answerInlineQuery', reply);
+    //    return;
+    //  }
+    //  this.log.debug(`Message regex info: ${stringify(messageInfo)}`);
+ 
+    //  const response = await this.message.handlePublicMessage(
+    //    sender,
+    //    recipient,
+    //    amount,
+    //    query.query,
+    //  );
+    //  // Reply with the result
+    //  //reply.text = response;
+    //  reply.results = [{
+    //   'type': 'Article',
+    //    'id':'1', 
+    //    'title':'Success! Click me.',
+    //    'input_message_content': {'message_text': response},
+    //   }];
+    //   reply.switch_pm_text = 'See your updated balance';
+  await this._post('answerCallbackQuery', reply);
+  }
+
   public parseDM = async (dm: Message): Promise<any> => {
     this.log.debug(`Parsing dm: ${JSON.stringify(dm)}`);
     const senderId = dm.from.username;
@@ -167,13 +213,13 @@ export class TelegramService {
         this.handleDM(sender, dm);
         break;
       }
-      case '/redeem': {}
-      case 'Redeem': {
+      case '/topup': {}
+      case 'Topup': {
         this.handleDM(sender, dm);
         break;
       }
       case '/withdraw': {}
-      case 'Withdraw': {
+      case 'Cashout': {
         //this.handleWithdraw(sender, recipientTag, amount, dm);
         break;
       }
@@ -183,15 +229,12 @@ export class TelegramService {
   private handleStart = async (message: Message) => {
     const reply = {
       chat_id: message.chat.id,
-      text: `Hi! Click an option.`,
+      text: `Hi! Click an option or enter a command`,
       reply_markup: {
         // ReplyKeyboardMarkup
         keyboard: [
         [{ text: 'Balance' },
-        { text: 'Send' }],
-        [{ text: 'Redeem' },
-        { text: 'Cashout' }],
-        [{ text: 'Help' }]
+        { text: 'Help' }]
         ],
       }
     };
@@ -204,9 +247,9 @@ export class TelegramService {
     const reply = {
       chat_id: message.chat.id,
       text: `I can help you do these things: 
-*Balance* Request your current balance and withdraw link
-*Send* Send some GazeCoin to another Telegram user
-*Redeem* To add to your funds using a link obtained from [the Gazecoin payments site](${this.config.paymentUrl})`,
+*/balance* Request your current balance and withdraw link
+*/send* Send some GazeCoin to another Telegram user
+*/topup* To add to your funds using a link obtained from [the Gazecoin payments site](${this.config.paymentUrl})`,
       parse_mode: 'MarkdownV2',
       disable_web_page_preview: true,
     };
