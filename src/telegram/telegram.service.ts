@@ -185,13 +185,13 @@ export class TelegramService {
       chat_id: message.chat.id,
       text: `Hi! Click an option.`,
       reply_markup: {
-        // InlineKeyboardMarkup
-        inline_keyboard: [
-        [{ text: 'Balance', callback_data: 'balance' },
-        { text: 'Send', callback_data: 'send' }],
-        [{ text: 'Redeem', callback_data: 'redeem' },
-        { text: 'Withdraw', callback_data: 'withdraw' }],
-        [{ text: 'Help', callback_data: 'help' }]
+        // ReplyKeyboardMarkup
+        keyboard: [
+        [{ text: 'Balance' },
+        { text: 'Send' }],
+        [{ text: 'Redeem' },
+        { text: 'Cashout' }],
+        [{ text: 'Help' }]
         ],
       }
     };
@@ -205,7 +205,7 @@ export class TelegramService {
       chat_id: message.chat.id,
       text: `I can help you do these things: 
 *Balance* Request your current balance and withdraw link
-*Send* Send some Gazecoin to another Telegram user
+*Send* Send some GazeCoin to another Telegram user
 *Redeem* To add to your funds using a link obtained from [the Gazecoin payments site](${this.config.paymentUrl})`,
       parse_mode: 'MarkdownV2',
       disable_web_page_preview: true,
@@ -221,11 +221,12 @@ export class TelegramService {
     const reply = {
       chat_id: message.chat.id,
       text: '',
-      disable_web_page_preview: true,          
+      disable_web_page_preview: true,
+      reply_markup: {force_reply: 'True'},
     };
     if (!messageInfo || !amount || !recipient) {
       this.log.info(`Improperly formatted tip, ignoring`);
-      reply.text = 'Huh??? :confused:';
+      reply.text = 'Huh??? 😕';
       await this._post('sendMessage', reply);
       return;
     }
