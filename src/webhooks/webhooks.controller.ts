@@ -74,6 +74,11 @@ export class WebhooksController {
       switch (true) {
         case (typeof(update.message) !== 'undefined'): {
           msg = update.message;
+          if (!msg.from || msg.from.username === this.config.telegramBotId) {
+            break;
+          }
+          this.queueService.enqueue(async () => this.telegram.parseDM(msg));
+          break;
         }
         case (typeof(update.channel_post) !== 'undefined'): {
           msg = update.channel_post;
