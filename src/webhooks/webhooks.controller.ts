@@ -61,7 +61,7 @@ export class WebhooksController {
 
   @Post("telegram/:token")
   async handleTelegramEvent(@Param('token') token: string, @Body() update: Update, @Res() response: any): Promise<any> {
-    this.log.debug(`Got TG token ${token} body:${JSON.stringify(update)}`);
+    this.log.debug(`Got TG token ${token}`);
     // Check validity of the token
     if (token !== this.config.telegramToken) {
       this.log.warn(`Invalid token in webhook callback URL. ${token}`);
@@ -78,7 +78,7 @@ export class WebhooksController {
         case (typeof(update.channel_post) !== 'undefined'): {
           msg = update.channel_post;
 
-          if (!msg.from || msg.from.username === this.config.telegramBotId) { 
+          if (!msg.from || msg.from.username === this.config.telegramBotId) {
             break;
           }
           //if ('private' === update.message.chat.type) {
