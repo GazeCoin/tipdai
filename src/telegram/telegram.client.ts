@@ -127,12 +127,12 @@ export class Telegram {
     const reply = {
       inline_query_id: queryId,
       results,
-      ...options,
+      switch_pm_text: 'PM',
     };
     return this._post('answerInlineQuery', reply);
   }
 
-  answerCallbackQuery = async (queryId:string, answer: string): Promise<any> => {
+  answerCallbackQuery = async (queryId: string, answer: string): Promise<any> => {
     const reply = {
       callback_query_id: queryId,
       text: answer,

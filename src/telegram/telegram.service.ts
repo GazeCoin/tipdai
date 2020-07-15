@@ -48,7 +48,7 @@ export class TelegramService {
 
     const button: InlineKeyboardButton = {
       text: 'Send',
-      callback_data: `{ sender: ${sender}, action: 'send', to: ${recipientTag} }`
+      callback_data: `{ sender: ${sender.telegramId}, action: 'send', to: ${recipientTag} }`
     };
     const keyboard: InlineKeyboardMarkup = { 
       inline_keyboard: [[button]]
@@ -73,14 +73,39 @@ export class TelegramService {
 
   // Callback Query - a guided walk through a send operation
   public parseCallbackQuery = async (query: CallbackQuery): Promise<any> => {
-    this.log.debug(`Parsing query: ${JSON.stringify(query)}`);
-     const sender = await this.userRepo.getTelegramUser(query.from.username);
+    this.log.debug(`Parsing callback query: ${JSON.stringify(query)}`);
     //  let command: string, recipientTag: string;
     //  const messageInfo = query.query.match(telegramQueryRegex());
     //  const amount = (messageInfo && messageInfo.length > 2) ? messageInfo[2] : undefined;
     //  recipientTag = (messageInfo && messageInfo.length > 1) ? messageInfo[1] : undefined;
     //  const recipient = await this.userRepo.getTelegramUser(recipientTag);
-    await this.telegramBot.answerInlineQueryWithText(query.id, ['answer']);
+    const state = JSON.parse(query.data);
+    if (state && 'send' === state.action && state.to && state.amount) {
+      await this.telegramBot.answerCallbackQuery(query.id, 'Sending...');
+      // Have everything - send it
+
+    } else {
+      await this.telegramBot.answerCallbackQuery(query.id, 'Enter amount');
+      const button: InlineKeyboardButton = {
+        text: '1',
+        callback_data: JSON.stringify({...state, amount: '1'})
+      };
+      const keyboard: InlineKeyboardMarkup = { 
+        inline_keyboard: [[button]]
+      };
+      const result: InlineQueryResultArticle = {
+        type: 'article',
+        id: '1',
+        title: `Send GazeCoin to ${state.to}`,
+        input_message_content: {message_text: 'Send GazeCoin'},
+        reply_markup: keyboard,
+      };
+  
+       // Assemble the inline keyboard
+       const results = [ result ];
+  
+      await this.telegramBot.answerInlineQuery(query.id, results, {});
+    }
   }
 
   public parseDM = async (dm: Message): Promise<any> => {
