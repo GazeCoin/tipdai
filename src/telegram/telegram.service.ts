@@ -70,20 +70,20 @@ export class TelegramService {
           answer = 'Press button to send'
           const recipientTag = messageInfo[1];
           const amount = messageInfo[3];
-          const text = `Send GZE${amount} to @${recipientTag}`;
-          const button: InlineKeyboardButton = {
-            text: text,
-            callback_data: JSON.stringify({ sender: sender.telegramId, action: 'send', to: recipientTag, amount })
-          };
-          const keyboard: InlineKeyboardMarkup = { 
-            inline_keyboard: [[button]]
-          };
+          const text = `@${sender.telegramId} sends GZE${amount} to @${recipientTag}`;
+          // const button: InlineKeyboardButton = {
+          //   text: text,
+          //   callback_data: JSON.stringify({ sender: sender.telegramId, action: 'send', to: recipientTag, amount })
+          // };
+          // const keyboard: InlineKeyboardMarkup = { 
+          //   inline_keyboard: [[button]]
+          // };
           const result: InlineQueryResultArticle = {
             type: 'article',
             id: '1',
             title: text,
             input_message_content: {message_text: text},
-            reply_markup: keyboard,
+            //reply_markup: keyboard,
           };
       
           // Assemble the inline keyboard
