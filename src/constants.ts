@@ -29,7 +29,7 @@ const telegramMention = (username?: string): string =>
 // For inline query mode, the bot name is not provided
 export const telegramTipRegex = (): RegExp =>
 new RegExp(
-  `.*${telegramMention()}\s+${amountPattern}?.*`,
+  `.*${telegramMention()}\\s+${amountPattern}?.*`,
   "i",
 );
 
