@@ -54,19 +54,7 @@ export class TelegramService {
     let answer = '';
     let results = [];
     if (messageInfo) {
-      switch (messageInfo.length) {
-        case 0: {}
-        case 1: {
-          // No username yet
-          answer = 'Enter the username and amount to send';
-          break;
-        }
-        case 2: {
-          // Username but no amount
-          answer = `Enter amount to send to @${messageInfo[1]}`
-          break;
-        } 
-        case 4: {
+      if (messageInfo.length > 3 && messageInfo[3]) {
           // Username and amount. May not be final
           answer = 'Press button to send'
           const recipientTag = messageInfo[1];
@@ -89,16 +77,32 @@ export class TelegramService {
       
           // Assemble the inline keyboard
           results = [ result ];
-          break;
-        }
+          await this.telegramBot.answerInlineQuery(query.id, results, { });
       }
     }
-
-    await this.telegramBot.answerInlineQuery(query.id, results, { });
   }
 
   public respondToInlineResult = async(result: ChosenInlineResult): Promise<any> => {
     this.log.debug(`Handling query result: ${JSON.stringify(result)}`);
+    const sender = await this.userRepo.getTelegramUser(result.from.username);
+    const messageInfo = result.query.match(telegramTipRegex());
+    const recipient = await this.userRepo.getTelegramUser(messageInfo[1]);
+    const response = await this.message.handlePublicMessage(
+      sender,
+      recipient,
+      messageInfo[3],
+      result.query,
+    );
+    // Send to sender
+    await this.telegramBot.sendMessage(
+      '@' + sender.telegramId,
+      response,
+    );
+    // Send to recipient
+    await this.telegramBot.sendMessage(
+      '@' + recipient.telegramId,
+      response,
+    );
 
   }
 

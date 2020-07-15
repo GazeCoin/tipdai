@@ -89,7 +89,7 @@ export class Telegram {
   }
 
   sendMessage = async (
-    chatId: number, 
+    chatId: number | string, 
     message: string, 
     replyKeyboardMarkup?: ReplyKeyboardMarkup,
     options?: any
