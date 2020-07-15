@@ -95,15 +95,16 @@ export class TelegramService {
     );
     this.log.debug(`${response}`);
     // Send to sender
-    await this.telegramBot.sendMessage(
+    const msg = await this.telegramBot.sendMessage(
       '@' + result.from.username,
       'test',
     );
+    this.log.debug(msg);
     // Send to recipient
-    await this.telegramBot.sendMessage(
-      '@' + recipient.telegramId,
-      response,
-    );
+    // await this.telegramBot.sendMessage(
+    //   '@' + recipient.telegramId,
+    //   response,
+    // );
 
   }
 
