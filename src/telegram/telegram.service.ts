@@ -1,6 +1,7 @@
 import { stringify } from "@connext/utils";
 import { Injectable } from "@nestjs/common";
-import { User as TelegramUser, InlineQuery, Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultArticle } from 'telegram-typings';
+import { User as TelegramUser, InlineQuery, Message, CallbackQuery, 
+  InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultArticle } from 'telegram-typings';
 
 import { ConfigService } from "../config/config.service";
 import { LoggerService } from "../logger/logger.service";
@@ -40,35 +41,57 @@ export class TelegramService {
 
   public isActive = () => !this.inactive;
 
-  // Public messages - inline chat ??
+  // Public messages - inline query.
+  // Messages are sent at almost every keypress, so we wait until
+  // the messages looks complete, then display a button.
   public parseInlineQuery = async (query: InlineQuery): Promise<any> => {
     this.log.debug(`Parsing inline query: ${JSON.stringify(query)}`);
     const sender = await this.userRepo.getTelegramUser(query.from.username);
-    const recipientTag = query.query;
+    const messageInfo = query.query.match(telegramTipRegex());
 
-    const button: InlineKeyboardButton = {
-      text: 'Send',
-      callback_data: JSON.stringify({ sender: sender.telegramId, action: 'send', to: recipientTag })
-    };
-    const keyboard: InlineKeyboardMarkup = { 
-      inline_keyboard: [[button]]
-    };
-    const result: InlineQueryResultArticle = {
-      type: 'article',
-      id: '1',
-      title: 'Send GazeCoin',
-      input_message_content: {message_text: 'Send GazeCoin'},
-      reply_markup: keyboard,
-    };
-
-     // Assemble the inline keyboard
-     const results = [ result ];
-
-     await this.telegramBot.answerInlineQuery(query.id, results, { });
-       //'input_message_content': {'message_text': response},
+    let answer = '';
+    let results = [];
+    if (messageInfo) {
+      switch (messageInfo.length) {
+        case 0: {}
+        case 1: {
+          // No username yet
+          answer = 'Enter the username and amount to send';
+          break;
+        }
+        case 2: {
+          // Username but no amount
+          answer = `Enter amount to send to ${messageInfo[1]}`
+          break;
+        } 
+        case 3: {
+          // Username and amount. May not be final
+          answer = 'Press button to send'
+          const recipientTag = messageInfo[1];
+          const amount = messageInfo[2];
+          const button: InlineKeyboardButton = {
+            text: `Send ${amount} to ${recipientTag}`,
+            callback_data: JSON.stringify({ sender: sender.telegramId, action: 'send', to: recipientTag, amount })
+          };
+          const keyboard: InlineKeyboardMarkup = { 
+            inline_keyboard: [[button]]
+          };
+          const result: InlineQueryResultArticle = {
+            type: 'article',
+            id: '1',
+            title: `Send ${amount} to ${recipientTag}`,
+            input_message_content: {message_text: `Send ${amount} to ${recipientTag}`},
+            reply_markup: keyboard,
+          };
       
-      //reply.switch_pm_text = 'See your updated balance';
+          // Assemble the inline keyboard
+          results = [ result ];
+          break;
+        }
+      }
+    }
 
+    await this.telegramBot.answerInlineQuery(query.id, results, { });
   }
 
   // Callback Query - a guided walk through a send operation
@@ -97,7 +120,7 @@ export class TelegramService {
         type: 'article',
         id: '1',
         title: `Send GazeCoin to ${state.to}`,
-        input_message_content: {message_text: 'Send GazeCoin'},
+        input_message_content: {message_text: `Send GazeCoin to ${state.to}`},
         reply_markup: keyboard,
       };
   
