@@ -48,7 +48,7 @@ export class TelegramService {
     this.log.debug(`Parsing inline query: ${JSON.stringify(query)}`);
     const sender = await this.userRepo.getTelegramUser(query.from.username);
     const messageInfo = query.query.match(telegramTipRegex());
-    this.log.debug(`query match: ${messageInfo}`);
+    this.log.debug(`query match: ${telegramTipRegex()}  - ${messageInfo}`);
 
     let answer = '';
     let results = [];
