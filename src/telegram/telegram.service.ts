@@ -15,7 +15,6 @@ const https = require('https');
 @Injectable()
 export class TelegramService {
   private inactive: boolean = false;
-  private botId: string;
   private telegramBot: Telegram;
 
   constructor(
@@ -39,39 +38,37 @@ export class TelegramService {
     this.telegramBot.initBot();
   }
 
+  public isActive = () => !this.inactive;
+
   // Public messages - inline chat ??
   public parseInlineQuery = async (query: InlineQuery): Promise<any> => {
     this.log.debug(`Parsing query: ${JSON.stringify(query)}`);
      const sender = await this.userRepo.getTelegramUser(query.from.username);
-     let command: string, recipientTag: string;
-     const messageInfo = query.query.match(telegramQueryRegex());
-     const amount = (messageInfo && messageInfo.length > 2) ? messageInfo[2] : undefined;
-     recipientTag = (messageInfo && messageInfo.length > 1) ? messageInfo[1] : undefined;
-     const recipient = await this.userRepo.getTelegramUser(recipientTag);
-
-     if (!messageInfo || !amount || !recipient) {
-       this.log.info(`Improperly formatted request, ignoring`);
-       await this.telegramBot.answerInlineQueryWithText(query.id, ['Huh??']);
-       return;
-     }
-     this.log.debug(`Message regex info: ${stringify(messageInfo)}`);
+     const recipientTag = query.query;
  
-     const response = await this.message.handlePublicMessage(
-       sender,
-       recipient,
-       amount,
-       query.query,
-     );
-     // Reply with the result
-     //reply.text = response;
-     await this.telegramBot.answerInlineQueryWithText(query.id, [response]);
+     // Assemble the inline keyboard
+     const results = [
+       {
+         type: 'Article',
+         id: '1',
+         title: 'Send GazeCoin',
+         input_message_content: {message_text: 'Send GazeCoin'},
+         reply_markup: { 
+          inline_keyboard: [[{
+             text: 'Send',
+             callback_data: `{ sender: ${sender}, action: 'send', to: ${recipientTag} }`
+          }]]},
+       }
+     ];
+
+     await this.telegramBot.answerInlineQuery(query.id, results, { switch_pm_text: 'PM'});
        //'input_message_content': {'message_text': response},
       
       //reply.switch_pm_text = 'See your updated balance';
 
   }
 
-  // Public messafes - inline chat ??
+  // Callback Query - a guided walk through a send operation
   public parseCallbackQuery = async (query: CallbackQuery): Promise<any> => {
     this.log.debug(`Parsing query: ${JSON.stringify(query)}`);
      const sender = await this.userRepo.getTelegramUser(query.from.username);
@@ -154,7 +151,7 @@ export class TelegramService {
       `I can help you do these things: 
 */balance* Request your current balance and withdraw link
 */send* Send some GazeCoin to another Telegram user
-*/topup* To add to your funds using a link obtained from [the Gazecoin payments site](${this.config.paymentUrl})`,
+*/topup* To add to your funds using a link obtained from [your GazeCoin wallet](${this.config.paymentUrl})`,
       undefined,
       {
         parse_mode: 'MarkdownV2',

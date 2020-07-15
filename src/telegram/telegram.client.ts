@@ -2,22 +2,11 @@
  Telegram API client
  */
 
-import { stringify } from "@connext/utils";
-import { Injectable } from "@nestjs/common";
 import axios, { AxiosInstance } from 'axios';
-import { User as TelegramUser, InlineQuery, Message, WebhookInfo, CallbackQuery, 
+import { User as TelegramUser, InlineQuery, Message, WebhookInfo, CallbackQuery, InlineQueryResult,
   InlineQueryResultArticle, InputTextMessageContent, ReplyKeyboardMarkup } from 'telegram-typings';
 
-import { ConfigService } from "../config/config.service";
-import { LoggerService } from "../logger/logger.service";
-import { telegramTipRegex, telegramQueryRegex } from "../constants";
-import { MessageService } from "../message/message.service";
-import { UserRepository } from "../user/user.repository";
-import { User } from "../user/user.entity";
-import { IntegrationEditData } from "discord.js";
-import { ReplaySubject } from "rxjs";
 import { TelegramConfig } from "../types";
-import { StringMapping } from "@connext/types";
 
 const https = require('https');
 
@@ -87,7 +76,7 @@ export class Telegram {
     })
   }
 
-  removeWebhook = async (webhookId: string|number): Promise<any> => {
+  removeWebhook = async (): Promise<any> => {
     return this._get('deleteWebhook');
   }
 
@@ -99,7 +88,10 @@ export class Telegram {
     return this._get('getMe');
   }
 
-  sendMessage = async (chatId: number, message: string, replyKeyboardMarkup?: ReplyKeyboardMarkup,
+  sendMessage = async (
+    chatId: number, 
+    message: string, 
+    replyKeyboardMarkup?: ReplyKeyboardMarkup,
     options?: any
     ): Promise<any> => {
 
@@ -113,11 +105,12 @@ export class Telegram {
     return this._post('sendMessage', reply);  
   }
 
+  // Text-only result list. The InlineQueryResult set will be assembled here. 
   answerInlineQueryWithText = async (queryId:string, options: string[]): Promise<any> => {
     const articles = options.map((val, idx) => {
       return {
         'type': 'Article',
-          'id':idx+1, 
+          'id':(idx+1).toString(), 
           'title':val,
           'input_message_content': {'message_text': val},
       }
@@ -125,7 +118,16 @@ export class Telegram {
     const reply = {
       inline_query_id: queryId,
       results: articles,
-      //switch_pm_text: undefined,
+    };
+    return this._post('answerInlineQuery', reply);
+  }
+
+  // Caller provides the array of InlineQueryResult. Suitable for composing inline keyboards.
+  answerInlineQuery = async (queryId:string, results: InlineQueryResult[], options: any): Promise<any> => {
+    const reply = {
+      inline_query_id: queryId,
+      results,
+      ...options,
     };
     return this._post('answerInlineQuery', reply);
   }

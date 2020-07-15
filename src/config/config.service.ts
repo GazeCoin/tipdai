@@ -148,7 +148,7 @@ export class ConfigService {
   get telegram(): TelegramConfig {
     return {
       botToken: env.telegramToken,
-      webhookUrl: this.webhooks().telegram.url,
+      webhookUrl: this.webhooks.telegram.url,
     }
   }
 
