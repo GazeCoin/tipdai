@@ -1,7 +1,7 @@
 import { stringify } from "@connext/utils";
 import { Injectable } from "@nestjs/common";
 import { User as TelegramUser, InlineQuery, Message, CallbackQuery, 
-  InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultArticle } from 'telegram-typings';
+  InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultArticle, ChosenInlineResult } from 'telegram-typings';
 
 import { ConfigService } from "../config/config.service";
 import { LoggerService } from "../logger/logger.service";
@@ -10,6 +10,7 @@ import { Telegram } from "./telegram.client";
 import { MessageService } from "../message/message.service";
 import { UserRepository } from "../user/user.repository";
 import { User } from "../user/user.entity";
+import { async } from "rxjs/internal/scheduler/async";
 
 const https = require('https');
 
@@ -70,7 +71,7 @@ export class TelegramService {
           answer = 'Press button to send'
           const recipientTag = messageInfo[1];
           const amount = messageInfo[3];
-          const text = `@${sender.telegramId} sends GZE${amount} to @${recipientTag}`;
+          const text = `@${sender.telegramId} is sending GZE${amount} to @${recipientTag}`;
           // const button: InlineKeyboardButton = {
           //   text: text,
           //   callback_data: JSON.stringify({ sender: sender.telegramId, action: 'send', to: recipientTag, amount })
@@ -94,6 +95,11 @@ export class TelegramService {
     }
 
     await this.telegramBot.answerInlineQuery(query.id, results, { });
+  }
+
+  public respondToInlineResult = async(result: ChosenInlineResult): Promise<any> => {
+    this.log.debug(`Handling query result: ${JSON.stringify(result)}`);
+
   }
 
   // Callback Query - a guided walk through a send operation

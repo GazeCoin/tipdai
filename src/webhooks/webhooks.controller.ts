@@ -98,6 +98,11 @@ export class WebhooksController {
           this.queueService.enqueue(async () => this.telegram.parseInlineQuery(update.inline_query));
           break;
         }
+        case (typeof(update.chosen_inline_result) !== 'undefined'): {
+          //if (update.inline_query.from.username === this.config.telegramBotId) { return; }
+          this.queueService.enqueue(async () => this.telegram.respondToInlineResult(update.chosen_inline_result));
+          break;
+        }
         case (typeof(update.callback_query) !== 'undefined'): {
           if (update.callback_query.from.username === this.config.telegramBotId) { return; }
           this.queueService.enqueue(async () => this.telegram.parseCallbackQuery(update.callback_query));
