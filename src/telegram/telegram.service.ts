@@ -48,7 +48,7 @@ export class TelegramService {
 
     const button: InlineKeyboardButton = {
       text: 'Send',
-      callback_data: `{ sender: ${sender.telegramId}, action: 'send', to: ${recipientTag} }`
+      callback_data: JSON.stringify({ sender: sender.telegramId, action: 'send', to: recipientTag })
     };
     const keyboard: InlineKeyboardMarkup = { 
       inline_keyboard: [[button]]

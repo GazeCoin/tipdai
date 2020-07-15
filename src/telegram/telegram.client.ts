@@ -128,6 +128,7 @@ export class Telegram {
       inline_query_id: queryId,
       results,
       switch_pm_text: 'PM',
+      switch_pm_parameter: '/start',
     };
     return this._post('answerInlineQuery', reply);
   }
