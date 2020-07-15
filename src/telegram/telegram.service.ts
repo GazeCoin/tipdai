@@ -93,10 +93,11 @@ export class TelegramService {
       messageInfo[3],
       result.query,
     );
+    this.log.debug(`${response}`);
     // Send to sender
     await this.telegramBot.sendMessage(
-      '@' + sender.telegramId,
-      response,
+      '@' + result.from.username,
+      'test',
     );
     // Send to recipient
     await this.telegramBot.sendMessage(
