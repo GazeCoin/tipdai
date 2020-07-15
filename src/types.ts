@@ -12,6 +12,12 @@ export type TwitterConfig = {
   };
 };
 
+export type TelegramConfig = {
+  botToken?: string;
+  log?: any;
+  webhookUrl: string;
+};
+
 export type PostgresConfig = {
   database: string;
   host: string;

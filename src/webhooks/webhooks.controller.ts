@@ -81,7 +81,6 @@ export class WebhooksController {
           break;
         }
         case (typeof(update.channel_post) !== 'undefined'): {
-          // TODO - looks like this type doesn't work
           msg = update.channel_post;
 
           if (!msg.from || msg.from.username === this.config.telegramBotId) {

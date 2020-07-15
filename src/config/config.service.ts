@@ -3,7 +3,7 @@ import { JsonRpcProvider } from "ethers/providers";
 import { Wallet } from "ethers";
 import * as fs from "fs";
 
-import { PostgresConfig, TwitterConfig } from "../types";
+import { PostgresConfig, TwitterConfig, TelegramConfig } from "../types";
 
 const env = {
   discordId: process.env.DISCORD_ID,
@@ -143,6 +143,13 @@ export class ConfigService {
 
   get twitterHmac(): string {
     return env.twitterConsumerSecret;
+  }
+
+  get telegram(): TelegramConfig {
+    return {
+      botToken: env.telegramToken,
+      webhookUrl: this.webhooks().telegram.url,
+    }
   }
 
   get database(): PostgresConfig {
