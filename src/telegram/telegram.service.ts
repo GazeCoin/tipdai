@@ -1,6 +1,6 @@
 import { stringify } from "@connext/utils";
 import { Injectable } from "@nestjs/common";
-import { User as TelegramUser, InlineQuery, Message, CallbackQuery } from 'telegram-typings';
+import { User as TelegramUser, InlineQuery, Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultArticle } from 'telegram-typings';
 
 import { ConfigService } from "../config/config.service";
 import { LoggerService } from "../logger/logger.service";
@@ -42,26 +42,29 @@ export class TelegramService {
 
   // Public messages - inline chat ??
   public parseInlineQuery = async (query: InlineQuery): Promise<any> => {
-    this.log.debug(`Parsing query: ${JSON.stringify(query)}`);
-     const sender = await this.userRepo.getTelegramUser(query.from.username);
-     const recipientTag = query.query;
- 
-     // Assemble the inline keyboard
-     const results = [
-       {
-         type: 'Article',
-         id: '1',
-         title: 'Send GazeCoin',
-         input_message_content: {message_text: 'Send GazeCoin'},
-         reply_markup: { 
-          inline_keyboard: [[{
-             text: 'Send',
-             callback_data: `{ sender: ${sender}, action: 'send', to: ${recipientTag} }`
-          }]]},
-       }
-     ];
+    this.log.debug(`Parsing inline query: ${JSON.stringify(query)}`);
+    const sender = await this.userRepo.getTelegramUser(query.from.username);
+    const recipientTag = query.query;
 
-     await this.telegramBot.answerInlineQuery(query.id, results, { switch_pm_text: 'PM'});
+    const button: InlineKeyboardButton = {
+      text: 'Send',
+      callback_data: `{ sender: ${sender}, action: 'send', to: ${recipientTag} }`
+    };
+    const keyboard: InlineKeyboardMarkup = { 
+      inline_keyboard: [[button]]
+    };
+    const result: InlineQueryResultArticle = {
+      type: 'article',
+      id: '1',
+      title: 'Send GazeCoin',
+      input_message_content: {message_text: 'Send GazeCoin'},
+      reply_markup: keyboard,
+    };
+
+     // Assemble the inline keyboard
+     const results = [ result ];
+
+     await this.telegramBot.answerInlineQuery(query.id, results, { });
        //'input_message_content': {'message_text': response},
       
       //reply.switch_pm_text = 'See your updated balance';
