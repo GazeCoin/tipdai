@@ -62,16 +62,17 @@ export class TelegramService {
         }
         case 2: {
           // Username but no amount
-          answer = `Enter amount to send to ${messageInfo[1]}`
+          answer = `Enter amount to send to @${messageInfo[1]}`
           break;
         } 
-        case 3: {
+        case 4: {
           // Username and amount. May not be final
           answer = 'Press button to send'
           const recipientTag = messageInfo[1];
-          const amount = messageInfo[2];
+          const amount = messageInfo[3];
+          const text = `Send GZE${amount} to @${recipientTag}`;
           const button: InlineKeyboardButton = {
-            text: `Send ${amount} to ${recipientTag}`,
+            text: text,
             callback_data: JSON.stringify({ sender: sender.telegramId, action: 'send', to: recipientTag, amount })
           };
           const keyboard: InlineKeyboardMarkup = { 
@@ -80,8 +81,8 @@ export class TelegramService {
           const result: InlineQueryResultArticle = {
             type: 'article',
             id: '1',
-            title: `Send ${amount} to ${recipientTag}`,
-            input_message_content: {message_text: `Send ${amount} to ${recipientTag}`},
+            title: text,
+            input_message_content: {message_text: text},
             reply_markup: keyboard,
           };
       
