@@ -59,7 +59,8 @@ export class TelegramService {
           answer = 'Press button to send'
           const recipientTag = messageInfo[1];
           const amount = messageInfo[3];
-          const text = `@${sender.telegramId} is sending GZE${amount} to @${recipientTag}`;
+          const title = `Send GZE${amount} to @${recipientTag}. OK?`;
+          const text = `@${sender.telegramId} sent GZE${amount} to @${recipientTag}`;
           // const button: InlineKeyboardButton = {
           //   text: text,
           //   callback_data: JSON.stringify({ sender: sender.telegramId, action: 'send', to: recipientTag, amount })
@@ -70,7 +71,7 @@ export class TelegramService {
           const result: InlineQueryResultArticle = {
             type: 'article',
             id: '1',
-            title: text,
+            title: title,
             input_message_content: {message_text: text},
             //reply_markup: keyboard,
           };
@@ -96,7 +97,8 @@ export class TelegramService {
     this.log.debug(`${response}`);
     // Send to sender
     const msg = await this.telegramBot.sendMessage(
-      '@' + result.from.username,
+      //'@' + result.from.username,
+      '@glamperd',
       'test',
     );
     this.log.debug(msg);
