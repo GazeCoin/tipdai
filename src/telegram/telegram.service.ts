@@ -251,15 +251,15 @@ export class TelegramService {
 
   private handleHelp = async (message: Message) => {
     const text = `I can help you do these things: 
-    */balance* Request your current balance and withdraw link
-    */send _@user_ _amount_* Send some GazeCoin to @user
-    */topup* To add to your funds using a link obtained from [your GazeCoin wallet](${this.config.paymentUrl})
-    
-    In public chats I can be summoned by starting a message with my name, @${this.telegramBot.botUser.username}\\.
-    In this context I can only do _send_ requests\\. Type the recipient\\'s name and the amount of GazeCoin to send\\.
-    Example\\: \`@${this.telegramBot.botUser.username} @jenny 5 \`
-    When it looks OK to me I\\'ll show a button you can press to confirm the transaction\\. The members of the chat
-    will see that you\\'ve sent a tip\\.`;
+*/balance* Request your current balance and withdraw link
+*/send _@user_ _amount_* Send some GazeCoin to @user
+*/topup* To add to your funds using a link obtained from [your GazeCoin wallet](${this.config.paymentUrl})
+` +
+    `In public chats I can be summoned by starting a message with my name, @${this.telegramBot.botUser.username}\\.` +
+    `In this context I can only do _send_ requests\\. Type the recipient\\'s name and the amount of GazeCoin to send\\./n` +
+    `Example\\: \`@${this.telegramBot.botUser.username} @jenny 5 \`/n` +
+    `When it looks OK to me I\\'ll show a button you can press to confirm the transaction\\. The members of the chat` +
+    `will see that you\\'ve sent a tip\\.`;
     await this.telegramBot.sendMessage(
       message.chat.id,
       text,
