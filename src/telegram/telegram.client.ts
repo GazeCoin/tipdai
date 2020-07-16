@@ -124,7 +124,7 @@ export class Telegram {
       ...options,
     };
 
-    return this._post('updateMessage', messageParams);
+    return this._post('editMessageText', messageParams);
   }
 
   // Text-only result list. The InlineQueryResult set will be assembled here. 
