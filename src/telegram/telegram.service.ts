@@ -254,10 +254,10 @@ export class TelegramService {
 */balance* Request your current balance and withdraw link
 */send _@user_ _amount_* Send some GazeCoin to @user
 */topup* To add to your funds using a link obtained from [your GazeCoin wallet](${this.config.paymentUrl})\\.\n\n` +
-    `In public chats I can be summoned by starting a message with my name, @${this.telegramBot.botUser.username}\\.` +
+    `In public chats I can be summoned by starting a message with my name, @${this.telegramBot.botUser.username}\\. ` +
     `In this context I can only do _send_ requests\\. Type the recipient\\'s name and the amount of GazeCoin to send\\.\n` +
     `Example\\: \`@${this.telegramBot.botUser.username} @jenny 5 \`\n` +
-    `When it looks OK to me I\\'ll show a button you can press to confirm the transaction\\. The members of the chat` +
+    `When it looks OK to me I\\'ll show a button you can press to confirm the transaction\\. The members of the chat ` +
     `will see that you\\'ve sent a tip\\.`;
     await this.telegramBot.sendMessage(
       message.chat.id,
@@ -305,20 +305,33 @@ export class TelegramService {
       sender,
       message.text,
     );
+    let resp = response[0];
     // Reply with the result
-    const reply = {
-      chat_id: message.chat.id,
-      text: response[0],
+    const options = {
       disable_web_page_preview: true,
+      reply_markup: undefined,
     };
+
+    const urlPos = resp.indexOf('http');
+    if (urlPos > 0) {
+      const url = resp.substring(urlPos);
+      resp = resp.substring(0, urlPos);
+
+      const button: InlineKeyboardButton = {
+        text: 'Cashout Link',
+        url
+      };
+      const keyboard: InlineKeyboardMarkup = { 
+        inline_keyboard: [[ button ]]
+      };
+      options.reply_markup = keyboard;
+    }
 
     const sentMsg = await this.telegramBot.sendMessage(
       message.chat.id,
-      response[0],
+      resp,
       undefined,
-      {
-        disable_web_page_preview: true,
-      }
+      options
     );
     this.log.debug(`Reply sent: ${JSON.stringify(sentMsg)}`);
   }
