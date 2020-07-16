@@ -109,11 +109,11 @@ export class TelegramService {
       this.log.debug(`${response}`);
       // Update the message to show status
       if (response.startsWith('Success')) {
-        this.telegramBot.editMessageText(
+        const msg = await this.telegramBot.editMessageText(
           message.chat.id,
           message.message_id,
-          `${sender.telegramUsername} sent GZE${amount} to ${recipient.telegramUsername}`,
-        )
+          `@${sender.telegramUsername} sent GZE${amount} to @${recipient.telegramUsername}`,
+        );
         // Send message to sender
         if (sender.telegramId) {
           const msg = await this.telegramBot.sendMessage(
@@ -121,22 +121,22 @@ export class TelegramService {
             `You sent GZE${amount} to ${recipient.telegramUsername}. Use /balance to see your new balance and cashout link.`,
           );
           this.log.debug(msg);
-          // Send message to recipient if we know them
-          if (recipient.telegramId) {
-            const msg = await this.telegramBot.sendMessage(
-              recipient.telegramId,
-              `${sender.telegramUsername} sent GZE${amount} to you. Use /balance to see your new balance and cashout link. Use /send to send tips to other users.`,
-            );
-            this.log.debug(msg);
-          }
-        } else {
-          // fail
-          this.telegramBot.editMessageText(
-            message.chat.id,
-            message.message_id,
-            `${messageInfo[1]} tried to send GZE${amount} to ${messageInfo[4]}. Sorry it didn't work out.`,
-          )
         }
+        // Send message to recipient if we know them
+        if (recipient.telegramId) {
+          const msg = await this.telegramBot.sendMessage(
+            recipient.telegramId,
+            `${sender.telegramUsername} sent GZE${amount} to you. You can now see your new balance and cashout link, and send tips to other users.`,
+          );
+          this.log.debug(msg);
+        }
+      } else {
+        // fail
+        this.telegramBot.editMessageText(
+          message.chat.id,
+          message.message_id,
+          `${messageInfo[1]} tried to send GZE${amount} to ${messageInfo[4]}. Sorry it didn't work out.`,
+        )
       }
     } 
   }
@@ -260,7 +260,7 @@ export class TelegramService {
     // will see that you've sent a tip.`;
     await this.telegramBot.sendMessage(
       message.chat.id,
-      text,
+      'foo',
       undefined,
       {
         parse_mode: 'MarkdownV2',
