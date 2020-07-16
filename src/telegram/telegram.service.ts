@@ -305,6 +305,7 @@ export class TelegramService {
       sender,
       message.text,
     );
+    this.log.debug(`response: ${response}`);
     let resp = response[0];
     // Reply with the result
     const options = {
