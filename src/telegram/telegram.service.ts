@@ -59,7 +59,7 @@ export class TelegramService {
           const recipientTag = messageInfo[1];
           const amount = messageInfo[3];
           const title = `Send GZE${amount} to @${recipientTag}. OK?`;
-          const text = `@${sender.telegramUsername} sent GZE${amount} to @${recipientTag}`;
+          const text = `@${sender.telegramUsername} is sending GZE${amount} to @${recipientTag}`;
           // const button: InlineKeyboardButton = {
           //   text: text,
           //   callback_data: JSON.stringify({ sender: sender.telegramId, action: 'send', to: recipientTag, amount })
@@ -143,29 +143,9 @@ export class TelegramService {
 
   public respondToInlineResult = async(result: ChosenInlineResult): Promise<any> => {
     this.log.debug(`Handling query result: ${JSON.stringify(result)}`);
-    const sender = await this.userRepo.getTelegramUser(result.from.id, result.from.username);
+    await this.userRepo.getTelegramUser(result.from.id, result.from.username);
     const messageInfo = result.query.match(telegramTipRegex());
-    const recipient = await this.userRepo.getTelegramUser(undefined, messageInfo[1].toLowerCase());
-    const response = await this.message.handlePublicMessage(
-      sender,
-      recipient,
-      messageInfo[3],
-      result.query,
-    );
-    this.log.debug(`${response}`);
-    // Send to sender
-    const msg = await this.telegramBot.sendMessage(
-      //'@' + result.from.username,
-      '@glamperd',
-      'test',
-    );
-    this.log.debug(msg);
-    // Send to recipient
-    // await this.telegramBot.sendMessage(
-    //   '@' + recipient.telegramId,
-    //   response,
-    // );
-
+    await this.userRepo.getTelegramUser(undefined, messageInfo[1].toLowerCase());
   }
 
   // Callback Query - a guided walk through a send operation
@@ -273,10 +253,7 @@ export class TelegramService {
     const text = `I can help you do these things: 
     */balance* Request your current balance and withdraw link
     */send @user 99.99* Send some GazeCoin to @user
-    */topup* To add to your funds using a link obtained from [your GazeCoin wallet](${this.config.paymentUrl})
-    
-    `
-;    
+    */topup* To add to your funds using a link obtained from [your GazeCoin wallet](${this.config.paymentUrl})`;    
     // `In public chats I can be summoned by starting a message with my name, @${this.telegramBot.botUser.username}. In this context
     // I can only do _send_ requests. Type the recipient's name and the amount of GazeCoin to send. When it 
     // looks OK to me I'll show a button you can press to confirm the transaction. The members of the chat
