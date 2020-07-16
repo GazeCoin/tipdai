@@ -49,7 +49,9 @@ export class TelegramService {
     this.log.debug(`Parsing inline query: ${JSON.stringify(query)}`);
     const sender = await this.userRepo.getTelegramUser(query.from.id, query.from.username);
     const messageInfo = query.query.match(telegramTipRegex());
-    this.log.debug(`query match: ${telegramTipRegex()}  - ${messageInfo}`);
+    this.log.debug(`query match: ${messageInfo}`);
+
+    //this.log.debug(`${sender.}`);
 
     let answer = '';
     let results = [];
@@ -60,19 +62,11 @@ export class TelegramService {
           const amount = messageInfo[3];
           const title = `Send GZE${amount} to @${recipientTag}. OK?`;
           const text = `@${sender.telegramUsername} is sending GZE${amount} to @${recipientTag}`;
-          // const button: InlineKeyboardButton = {
-          //   text: text,
-          //   callback_data: JSON.stringify({ sender: sender.telegramId, action: 'send', to: recipientTag, amount })
-          // };
-          // const keyboard: InlineKeyboardMarkup = { 
-          //   inline_keyboard: [[button]]
-          // };
           const result: InlineQueryResultArticle = {
             type: 'article',
             id: '1',
             title: title,
             input_message_content: {message_text: text},
-            //reply_markup: keyboard,
           };
       
           // Assemble the inline keyboard
@@ -135,7 +129,7 @@ export class TelegramService {
         this.telegramBot.editMessageText(
           message.chat.id,
           message.message_id,
-          `${messageInfo[1]} tried to send GZE${amount} to ${messageInfo[4]}. Sorry it didn't work out.`,
+          `@${messageInfo[1]} tried to send GZE${amount} to @${messageInfo[4]}. Sorry it didn't work out.`,
         )
       }
     } 
@@ -146,43 +140,6 @@ export class TelegramService {
     await this.userRepo.getTelegramUser(result.from.id, result.from.username);
     const messageInfo = result.query.match(telegramTipRegex());
     await this.userRepo.getTelegramUser(undefined, messageInfo[1].toLowerCase());
-  }
-
-  // Callback Query - a guided walk through a send operation
-  public parseCallbackQuery = async (query: CallbackQuery): Promise<any> => {
-    this.log.debug(`Parsing callback query: ${JSON.stringify(query)}`);
-    //  let command: string, recipientTag: string;
-    //  const messageInfo = query.query.match(telegramQueryRegex());
-    //  const amount = (messageInfo && messageInfo.length > 2) ? messageInfo[2] : undefined;
-    //  recipientTag = (messageInfo && messageInfo.length > 1) ? messageInfo[1] : undefined;
-    //  const recipient = await this.userRepo.getTelegramUser(recipientTag);
-    const state = JSON.parse(query.data);
-    if (state && 'send' === state.action && state.to && state.amount) {
-      await this.telegramBot.answerCallbackQuery(query.id, 'Sending...');
-      // Have everything - send it
-
-    } else {
-      await this.telegramBot.answerCallbackQuery(query.id, 'Enter amount');
-      const button: InlineKeyboardButton = {
-        text: '1',
-        callback_data: JSON.stringify({...state, amount: '1'})
-      };
-      const keyboard: InlineKeyboardMarkup = { 
-        inline_keyboard: [[button]]
-      };
-      const result: InlineQueryResultArticle = {
-        type: 'article',
-        id: '1',
-        title: `Send GazeCoin to ${state.to}`,
-        input_message_content: {message_text: `Send GazeCoin to ${state.to}`},
-        reply_markup: keyboard,
-      };
-  
-       // Assemble the inline keyboard
-       const results = [ result ];
-  
-      await this.telegramBot.answerInlineQuery(query.id, results, {});
-    }
   }
 
   public parseDM = async (dm: Message): Promise<any> => {
@@ -316,7 +273,6 @@ export class TelegramService {
 
     const zeroBal = resp.match(/.*balance is GZE0\.\s.*(https:.*)\).*/i);
     if (zeroBal) {
-      resp = `Your balance is GZE0`;
       this.log.debug(`${zeroBal[1]}`);
       const button: InlineKeyboardButton = {
         text: 'Wallet',

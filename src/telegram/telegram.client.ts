@@ -70,9 +70,8 @@ export class Telegram {
       url: this.webhookUrl,
       allowed_updates: [
         "message",
-        "channel_post", // TODO need this?
+        "channel_post", 
         "inline_query",
-        "callback_query", // TODO this?
         "chosen_inline_result"
       ]
     })

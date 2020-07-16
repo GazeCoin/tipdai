@@ -102,8 +102,6 @@ export class WebhooksController {
           break;
         }
         case (typeof(update.callback_query) !== 'undefined'): {
-          if (update.callback_query.from.username === this.config.telegramBotId) { return; }
-          this.queueService.enqueue(async () => this.telegram.parseCallbackQuery(update.callback_query));
           break;
         }
       }
