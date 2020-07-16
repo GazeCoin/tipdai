@@ -1,3 +1,5 @@
+import { Message, User } from 'telegram-typings';
+
 export type TwitterConfig = {
   accessToken?: string;
   accessSecret?: string;
@@ -17,6 +19,9 @@ export type TelegramConfig = {
   log?: any;
   webhookUrl: string;
 };
+
+// telegram-typings might add this one day
+export type TelegramMessage = Message & { via_bot?: User}
 
 export type PostgresConfig = {
   database: string;

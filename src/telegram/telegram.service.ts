@@ -5,12 +5,12 @@ import { User as TelegramUser, InlineQuery, Message, CallbackQuery,
 
 import { ConfigService } from "../config/config.service";
 import { LoggerService } from "../logger/logger.service";
-import { telegramTipRegex, telegramQueryRegex } from "../constants";
+import { telegramTipRegex, telegramSendRegex } from "../constants";
 import { Telegram } from "./telegram.client";
 import { MessageService } from "../message/message.service";
 import { UserRepository } from "../user/user.repository";
 import { User } from "../user/user.entity";
-import { async } from "rxjs/internal/scheduler/async";
+import { TelegramMessage } from "../types";
 
 const https = require('https');
 
@@ -47,7 +47,7 @@ export class TelegramService {
   // the messages looks complete, then display a button.
   public parseInlineQuery = async (query: InlineQuery): Promise<any> => {
     this.log.debug(`Parsing inline query: ${JSON.stringify(query)}`);
-    const sender = await this.userRepo.getTelegramUser(query.from.username);
+    const sender = await this.userRepo.getTelegramUser(query.from.id, query.from.username);
     const messageInfo = query.query.match(telegramTipRegex());
     this.log.debug(`query match: ${telegramTipRegex()}  - ${messageInfo}`);
 
@@ -83,11 +83,70 @@ export class TelegramService {
     }
   }
 
+  public parseChannelPost = async(message: TelegramMessage): Promise<any> => {
+    // Most channel posts are ignored since they don't identify the sender. 
+    // We use channel posts that result from clicking to confirm a send because 
+    // the sender is placed in the message text by the bot
+    this.log.debug(`Parsing channel post: ${JSON.stringify(message)}`);
+    // Make sure this came from me
+    if (!message.via_bot || !this.telegramBot.isMe(message.via_bot.id)) {
+      this.log.info('Ignoring channel post from another bot');
+      return;
+    }
+
+    // Parse the text
+    const messageInfo = message.text.match(telegramSendRegex());
+    if (messageInfo && messageInfo.length > 4) {
+      const sender = await this.userRepo.getTelegramUser(undefined, messageInfo[1].toLowerCase());
+      const recipient = await this.userRepo.getTelegramUser(undefined, messageInfo[4].toLowerCase());
+      const amount = messageInfo[3];
+
+      const response = await this.message.handlePublicMessage(
+        sender,
+        recipient,
+        amount,
+        message.text
+      );
+      this.log.debug(`${response}`);
+      // Update the message to show status
+      if (response.startsWith('Success')) {
+        this.telegramBot.editMessageText(
+          message.chat.id,
+          message.message_id,
+          `${messageInfo[1]} sent GZE${amount} to ${messageInfo[4]}`,
+        )
+        // Send message to sender
+        if (sender.telegramId) {
+          const msg = await this.telegramBot.sendMessage(
+            sender.telegramId,
+            `You sent GZE${amount} to ${recipient.telegramUsername}. Use /balance to see your new balance and cashout link.`,
+          );
+          this.log.debug(msg);
+          // Send message to recipient if we know them
+          if (recipient.telegramId) {
+            const msg = await this.telegramBot.sendMessage(
+              recipient.telegramId,
+              `${sender.telegramUsername} sent GZE${amount} to you. Use /balance to see your new balance and cashout link. Use /send to send tips to other users.`,
+            );
+            this.log.debug(msg);
+          }
+        } else {
+          // fail
+          this.telegramBot.editMessageText(
+            message.chat.id,
+            message.message_id,
+            `${messageInfo[1]} tried to send GZE${amount} to ${messageInfo[4]}. Sorry it didn't work out.`,
+          )
+        }
+      }
+    } 
+  }
+
   public respondToInlineResult = async(result: ChosenInlineResult): Promise<any> => {
     this.log.debug(`Handling query result: ${JSON.stringify(result)}`);
-    const sender = await this.userRepo.getTelegramUser(result.from.username);
+    const sender = await this.userRepo.getTelegramUser(result.from.id, result.from.username);
     const messageInfo = result.query.match(telegramTipRegex());
-    const recipient = await this.userRepo.getTelegramUser(messageInfo[1]);
+    const recipient = await this.userRepo.getTelegramUser(undefined, messageInfo[1].toLowerCase());
     const response = await this.message.handlePublicMessage(
       sender,
       recipient,
@@ -149,8 +208,7 @@ export class TelegramService {
 
   public parseDM = async (dm: Message): Promise<any> => {
     this.log.debug(`Parsing dm: ${JSON.stringify(dm)}`);
-    const senderId = dm.from.username;
-    let sender = await this.userRepo.getTelegramUser(senderId);
+    let sender = await this.userRepo.getTelegramUser(dm.from.id, dm.from.username);
     let message = dm.text;
     // Telegram has parsed the command and recipient username. Get them.
     let command: string, recipientTag: string;
@@ -228,7 +286,7 @@ export class TelegramService {
   }
 
   private handleSend = async (sender: User, recipientTag: string, message: Message) => {
-    const recipient = await this.userRepo.getTelegramUser(recipientTag);
+    const recipient = await this.userRepo.getTelegramUser(undefined, recipientTag.toLowerCase());
     const messageInfo = message.text.match(telegramTipRegex());
     const amount = (messageInfo && messageInfo.length > 3) ? messageInfo[3] : undefined;
     if (!messageInfo || !amount || !recipient) {

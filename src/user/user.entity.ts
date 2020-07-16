@@ -19,8 +19,11 @@ export class User {
   @Column("text", { nullable: true })
   discordId!: string;
 
+  @Column("numeric", { nullable: true })
+  telegramId!: number;
+
   @Column("text", { nullable: true })
-  telegramId!: string;
+  telegramUsername!: string;
 
   @OneToOne(type => Payment, { eager: true })
   @JoinColumn()
@@ -29,7 +32,7 @@ export class User {
   getUsername(type?: string): string {
     switch (type) {
       case undefined: { // Return any non-null name or ID
-        return this.twitterName || this.twitterId || this.discordId || this.telegramId;
+        return this.twitterName || this.twitterId || this.discordId || this.telegramUsername;
       }
       case 'twitter': {
         return this.twitterName || this.twitterId;
@@ -38,7 +41,7 @@ export class User {
         return this.discordId;
       }
       case 'telegram': {
-        return this.telegramId;
+        return this.telegramUsername;
       }
     }
     return null;

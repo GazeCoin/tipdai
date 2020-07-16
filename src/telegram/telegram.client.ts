@@ -18,6 +18,7 @@ export class Telegram {
   botToken: string;
   log?: any;
   webhookUrl: any;
+  telegramUser: TelegramUser;
 
   constructor(config: TelegramConfig) {
     this.log = config.log || console;
@@ -37,6 +38,7 @@ export class Telegram {
     this.getBot().then((res) => {
       
       if (res.result) {
+        this.telegramUser = res.result;
         this.botId = res.result.username;
         this.log.info(`Bot ID set to ${this.botId}`);
 
@@ -88,6 +90,10 @@ export class Telegram {
     return this._get('getMe');
   }
 
+  isMe = (id: number):boolean => {
+    return id === this.telegramUser.id;
+  }
+
   sendMessage = async (
     chatId: number | string, 
     message: string, 
@@ -95,14 +101,30 @@ export class Telegram {
     options?: any
     ): Promise<any> => {
 
-    const reply = {
+    const messageParams = {
       chat_id: chatId,
       text: message,
       reply_markup: replyKeyboardMarkup,
       ...options,
     };
 
-    return this._post('sendMessage', reply);  
+    return this._post('sendMessage', messageParams);  
+  }
+
+  editMessageText = async (
+    chatId: number | string, 
+    messageId: number, 
+    text: string,
+    options?: any
+  ): Promise<any> => {
+    const messageParams = {
+      chat_id: chatId,
+      message_id: messageId,
+      text: text,
+      ...options,
+    };
+
+    return this._post('updateMessage', messageParams);
   }
 
   // Text-only result list. The InlineQueryResult set will be assembled here. 

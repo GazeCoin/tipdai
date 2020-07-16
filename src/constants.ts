@@ -3,7 +3,8 @@ export const secretRegex = /secret=(0x[0-9a-fA-F]{64})/;
 
 const esc = (str: string): string => str.replace(/[.*+\-?^${}()|[\]\\]/g, "\\$&");
 
-const amountPattern = "GZE\\s?\([0-9]+\\.?[0-9]{0,2}\)";
+const numericAmountPattern = "\([0-9]+\\.?[0-9]{0,2}\)";
+const amountPattern = `GZE\\s?${numericAmountPattern}`;
 
 const discordMention = (userId?: string): string =>
   `<@!\?\(${userId || "\\\d{17,19}"}\)>`;
@@ -29,14 +30,14 @@ const telegramMention = (username?: string): string =>
 // For inline query mode, the bot name is not provided
 export const telegramTipRegex = (): RegExp =>
 new RegExp(
-  `.*${telegramMention()}\\s+(${amountPattern})?.*`,
+  `.*${telegramMention()}\\s+(${numericAmountPattern})?.*`,
   "i",
 );
 
-export const telegramQueryRegex = (botName?: string): RegExp =>
-  new RegExp(
-    `.*?${telegramMention()}.*?${amountPattern}.*?`,
-    "i",
+export const telegramSendRegex = (): RegExp =>
+new RegExp(
+  `${telegramMention()}.*sen[dt].*(${amountPattern}) to ${telegramMention()}`,
+  "i",
 );
 
 const exampleTwitterPrivateMessage = {

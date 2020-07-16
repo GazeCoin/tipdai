@@ -1,6 +1,7 @@
 import * as crypto from "crypto";
 import { Body, Controller, Get, Post, Query, Param, Res, HttpStatus } from "@nestjs/common";
 import { Update, Message } from 'telegram-typings';
+import { TelegramMessage } from '../types';
 
 import { ConfigService } from "../config/config.service";
 import { LoggerService } from "../logger/logger.service";
@@ -70,7 +71,7 @@ export class WebhooksController {
     }
     this.log.debug(`Got telegram updates: ${JSON.stringify(update)}`);
     if (update.update_id > this.lastTelegramUpdateIdx) { // Ignore repeats
-      let msg: Message;
+      let msg: TelegramMessage;
       switch (true) {
         case (typeof(update.message) !== 'undefined'): {
           msg = update.message;
@@ -83,14 +84,11 @@ export class WebhooksController {
         case (typeof(update.channel_post) !== 'undefined'): {
           msg = update.channel_post;
 
-          if (!msg.from || msg.from.username === this.config.telegramBotId) {
-            break;
-          }
-          //if ('private' === update.message.chat.type) {
+          if (msg.via_bot) {
+            // handle this message - could be a confirmation of inline query send request
             this.queueService.enqueue(async () => this.telegram.parseDM(msg));
-          //} else {
-          //  this.queueService.enqueue(async () => this.telegram.parseMessage(msg));
-          //}
+          }
+
           break;
         }
         case (typeof(update.inline_query) !== 'undefined'): {

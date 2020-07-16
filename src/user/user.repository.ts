@@ -27,11 +27,26 @@ export class UserRepository extends Repository<User> {
     return user;
   }
 
-  async getTelegramUser(telegramId: string): Promise<User> {
-    let user = await this.findOne({ where: { telegramId } });
+  async getTelegramUser(telegramId?: number, telegramUsername?: string): Promise<User> {
+
     let shouldSave = false;
+    let user;
+    if (telegramId) {
+      user = await this.findOne({ where: { telegramId } });
+    }
+    if (!telegramId || !user) {
+      user = await this.findOne({ where: { telegramUsername } });
+    }
     if (!user) {
       user = await this.create({ telegramId });
+      shouldSave = true;
+    }
+    if (telegramId && !user.telegramId) {
+      user.telegramId = telegramId;
+      shouldSave = true;
+    }
+    if (telegramUsername && !user.telegramUsername) {
+      user.telegramUsername = telegramUsername;
       shouldSave = true;
     }
     if (shouldSave) {
