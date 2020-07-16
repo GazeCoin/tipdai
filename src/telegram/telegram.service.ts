@@ -307,25 +307,39 @@ export class TelegramService {
     );
     this.log.debug(`response: ${response}`);
     let resp = response[0];
+
     // Reply with the result
     const options = {
       disable_web_page_preview: true,
       reply_markup: undefined,
     };
 
-    const urlPos = resp.indexOf('http');
-    if (urlPos > 0) {
-      const url = resp.substring(urlPos);
-      resp = resp.substring(0, urlPos);
-
+    const zeroBal = resp.match(/.*balance is GZE0\.\s.*(https:.*)\).*/gi);
+    if (zeroBal) {
       const button: InlineKeyboardButton = {
-        text: 'Cashout Link',
-        url
+        text: 'Wallet',
+        url: zeroBal[1],
       };
-      const keyboard: InlineKeyboardMarkup = { 
+      const keyboard: InlineKeyboardMarkup = {
         inline_keyboard: [[ button ]]
       };
       options.reply_markup = keyboard;
+    } else {
+      // balance and topup response
+      const urlPos = resp.indexOf('http');
+      if (urlPos > 0) {
+        const url = resp.substring(urlPos);
+        resp = resp.substring(0, urlPos);
+
+        const button: InlineKeyboardButton = {
+          text: 'Cashout Link',
+          url
+        };
+        const keyboard: InlineKeyboardMarkup = {
+          inline_keyboard: [[ button ]]
+        };
+        options.reply_markup = keyboard;
+      }
     }
 
     const sentMsg = await this.telegramBot.sendMessage(
