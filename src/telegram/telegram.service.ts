@@ -251,8 +251,8 @@ export class TelegramService {
 
   private handleHelp = async (message: Message) => {
     const text = `I can help you do these things: 
-    */balance* Request your current balance and withdraw link`;
-//    */send \@user 99.99* Send some GazeCoin to \@user
+    */balance* Request your current balance and withdraw link
+    */send @user 99.99* Send some GazeCoin to @user`;
   //  */topup* To add to your funds using a link obtained from [your GazeCoin wallet](${this.config.paymentUrl})`;    
     // `In public chats I can be summoned by starting a message with my name, @${this.telegramBot.botUser.username}. In this context
     // I can only do _send_ requests. Type the recipient's name and the amount of GazeCoin to send. When it 
