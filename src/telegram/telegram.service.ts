@@ -319,7 +319,7 @@ export class TelegramService {
       resp = `Your balance is GZE0`;
       const button: InlineKeyboardButton = {
         text: 'Wallet',
-        url: zeroBal[1],
+        url: 'https://card.gazecoin.xyz',
       };
       const keyboard: InlineKeyboardMarkup = {
         inline_keyboard: [[ button ]]
