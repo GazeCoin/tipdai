@@ -18,7 +18,7 @@ export class Telegram {
   botToken: string;
   log?: any;
   webhookUrl: any;
-  telegramUser: TelegramUser;
+  botUser: TelegramUser;
 
   constructor(config: TelegramConfig) {
     this.log = config.log || console;
@@ -38,7 +38,7 @@ export class Telegram {
     this.getBot().then((res) => {
       
       if (res.result) {
-        this.telegramUser = res.result;
+        this.botUser = res.result;
         this.botId = res.result.username;
         this.log.info(`Bot ID set to ${this.botId}`);
 
@@ -91,7 +91,7 @@ export class Telegram {
   }
 
   isMe = (id: number):boolean => {
-    return id === this.telegramUser.id;
+    return id === this.botUser.id;
   }
 
   sendMessage = async (

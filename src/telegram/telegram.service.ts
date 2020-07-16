@@ -218,7 +218,7 @@ export class TelegramService {
         if ("bot_command" === entity.type) {
           command = e;
         } else if ("mention" === entity.type) {
-          recipientTag = e;
+          recipientTag = e.substring(1); // strip the leading @
         }
       });
     } else {
@@ -264,8 +264,8 @@ export class TelegramService {
       {
         // ReplyKeyboardMarkup
         keyboard: [
-        [{ text: 'Balance' },
-        { text: 'Help' }]
+         [{ text: 'Balance' },
+          { text: 'Help' }]
         ],
       });
   }
@@ -275,8 +275,13 @@ export class TelegramService {
       message.chat.id,
       `I can help you do these things: 
 */balance* Request your current balance and withdraw link
-*/send* Send some GazeCoin to another Telegram user
-*/topup* To add to your funds using a link obtained from [your GazeCoin wallet](${this.config.paymentUrl})`,
+*/send @user 99.99* Send some GazeCoin to @user
+*/topup* To add to your funds using a link obtained from [your GazeCoin wallet](${this.config.paymentUrl})
+
+In public chats I can be summoned by starting a message with my name, @${this.telegramBot.botUser.username}. In this context
+I can only do _send_ requests. Type the recipient's name and the amount of GazeCoin to send. When it 
+looks OK to me I'll show a button you can press to confirm the transaction. The members of the chat
+will see that you've sent a tip.`,
       undefined,
       {
         parse_mode: 'MarkdownV2',
