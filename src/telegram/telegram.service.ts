@@ -314,13 +314,13 @@ export class TelegramService {
       reply_markup: undefined,
     };
 
-    const zeroBal = resp.match(/.*balance is GZE0\.\s.*(https:.*)\).*/gi);
+    const zeroBal = resp.match(/.*balance is GZE0\.\s.*(https:.*)\).*/i);
     if (zeroBal) {
       resp = `Your balance is GZE0`;
-      this.log.debug(`${zeroBal.groups}`);
+      this.log.debug(`${zeroBal[1]}`);
       const button: InlineKeyboardButton = {
         text: 'Wallet',
-        url: 'https://card.gazecoin.xyz',
+        url: zeroBal[1],
       };
       const keyboard: InlineKeyboardMarkup = {
         inline_keyboard: [[ button ]]
