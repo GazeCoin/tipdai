@@ -86,7 +86,7 @@ export class WebhooksController {
 
           if (msg.via_bot) {
             // handle this message - could be a confirmation of inline query send request
-            this.queueService.enqueue(async () => this.telegram.parseDM(msg));
+            this.queueService.enqueue(async () => this.telegram.parseChannelPost(msg));
           }
 
           break;
