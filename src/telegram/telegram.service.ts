@@ -316,6 +316,7 @@ export class TelegramService {
 
     const zeroBal = resp.match(/.*balance is GZE0\.\s.*(https:.*)\).*/gi);
     if (zeroBal) {
+      resp = `Your balance is GZE0`;
       const button: InlineKeyboardButton = {
         text: 'Wallet',
         url: zeroBal[1],
