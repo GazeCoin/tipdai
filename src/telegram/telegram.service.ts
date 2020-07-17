@@ -67,6 +67,7 @@ export class TelegramService {
     } else {
       // Handle /request instructions
       messageInfo = query.query.match(`/\/request\s+([0-9]+)/i`);
+      this.log.debug(`/request match? ${messageInfo}`);
       if (messageInfo) {
         this.log.debug(`Creating request`);
         const amount = messageInfo[1];
@@ -318,10 +319,9 @@ export class TelegramService {
   }
 
   private handleSend = async (sender: User, recipientTag: string, message: Message) => {
-    const recipient = await this.userRepo.getTelegramUser(undefined, recipientTag.toLowerCase());
     const messageInfo = message.text.match(telegramTipRegex());
     const amount = (messageInfo && messageInfo.length > 3) ? messageInfo[3] : undefined;
-    if (!messageInfo || !amount || !recipient) {
+    if (!messageInfo || !amount || !recipientTag) {
       this.log.info(`Improperly formatted tip, ignoring`);
       return this.telegramBot.sendMessage(
         message.chat.id,
@@ -329,6 +329,7 @@ export class TelegramService {
       );
     }
     this.log.debug(`Message regex info: ${stringify(messageInfo)}`);
+    const recipient = await this.userRepo.getTelegramUser(undefined, recipientTag.toLowerCase());
 
     await this.sendTip(sender, recipient, amount, message.text);
   }
