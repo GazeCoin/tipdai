@@ -24,7 +24,7 @@ export const twitterTipRegex = (botName?) =>
     "i",
   );
 
-const telegramMention = (username?: string): string =>
+export const telegramMention = (username?: string): string =>
   twitterMention(username);
 
 // For inline query mode, the bot name is not provided

@@ -176,7 +176,7 @@ export class Telegram {
 
   botPMInlineKeyboardButton = ():InlineKeyboardButton => {
     return {
-      text: 'DM',
+      text: `DM ${this.botUser.username}`,
       url: `https://t.me/${this.botUser.username}?start`,
     }
   }

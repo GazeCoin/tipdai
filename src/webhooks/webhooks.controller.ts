@@ -102,6 +102,7 @@ export class WebhooksController {
           break;
         }
         case (typeof(update.callback_query) !== 'undefined'): {
+          this.queueService.enqueue(async () => this.telegram.parseCallbackQuery(update.callback_query));
           break;
         }
       }
