@@ -288,7 +288,7 @@ export class TelegramService {
 */balance* Request your current balance and withdraw link
 */send _@user_ _amount_* Send some GazeCoin to @user
 */topup* To add to your funds using a link obtained from [your GazeCoin wallet](${this.config.paymentUrl})\\.
-*/request _amount_* to generate a request that can be sent to a chat\\.\n\n` +
+*/request _amount_* to generate a request that can be forwarded to a chat\\.\n\n` +
     `In public chats I can be summoned by starting a message with my name, @${this.telegramBot.botUser.username}\\. ` +
     `In this context I can do _send_ requests\\. Type the recipient\\'s name and the amount of GazeCoin to send\\.\n` +
     `Example\\: \`@${this.telegramBot.botUser.username} @jenny 5 \`\n` +
