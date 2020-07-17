@@ -291,7 +291,8 @@ export class TelegramService {
     `Example\\: \`@${this.telegramBot.botUser.username} @jenny 5 \`\n` +
     `When it looks OK to me I\\'ll show a button you can press to confirm the transaction\\. The members of the chat ` +
     `will see that you\\'ve sent a tip\\.\n\n` +
-    `I can also add a message to make it easy for chat members to tip you. `;
+    `I can also add a message to make it easy for chat members to tip you\\. Use the *\\request _amount_* command\\.\n` +
+    `Example\\: \`@${this.telegramBot.botUser.username} \\request 5\``;
     await this.telegramBot.sendMessage(
       message.chat.id,
       text,
