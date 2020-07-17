@@ -5,7 +5,7 @@ import { User as TelegramUser, InlineQuery, Message, CallbackQuery,
 
 import { ConfigService } from "../config/config.service";
 import { LoggerService } from "../logger/logger.service";
-import { telegramTipRegex, telegramMention } from "../constants";
+import { telegramTipRegex } from "../constants";
 import { Telegram } from "./telegram.client";
 import { MessageService } from "../message/message.service";
 import { UserRepository } from "../user/user.repository";
@@ -168,7 +168,10 @@ export class TelegramService {
 
   public respondToInlineResult = async(result: ChosenInlineResult): Promise<any> => {
     this.log.debug(`Handling query result: ${JSON.stringify(result)}`);
-    // This needs to handle send requests when in a group chat but not a channel.
+
+    // Ignore /request results
+    if (result.query.startsWith('/request')) return;
+
     const sender = await this.userRepo.getTelegramUser(result.from.id, result.from.username);
     const messageInfo = result.query.match(telegramTipRegex());
     const recipient = await this.userRepo.getTelegramUser(undefined, messageInfo[1].toLowerCase());
