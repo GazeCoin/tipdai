@@ -96,7 +96,7 @@ export class TipService {
       await this.tipRepo.save(newTip);
       return `Success! A tip of GZE${amount} has been transfered.\n\n` +
         `@${recipient.getUsername()}, you can now send tips or DM me to cashout.\n\n` +
-        `@${sender.getUsername()}, your old cashout link has been redeemed, DM me for a new one`;
+        `@${sender.getUsername()}, your old cashout link is no longer valid, DM me for a new one`;
     } catch (e) {
       this.log.info(`Failed to handle tip: ${e}`);
       newTip.result = `ERROR: ${e.message}`;
