@@ -66,7 +66,7 @@ export class TelegramService {
       }
     } else {
       // Handle /request instructions
-      messageInfo = query.query.match(`/\/request\s+([0-9]+)/i`);
+      messageInfo = query.query.match('/\/request\s+([0-9]+)/i');
       this.log.debug(`/request match? ${messageInfo}`);
       if (messageInfo) {
         this.log.debug(`Creating request`);
@@ -81,7 +81,6 @@ export class TelegramService {
         ]]});
         results = [ result ];
         await this.telegramBot.answerInlineQuery(query.id, results, { });
-
       }
     }
   }
@@ -311,7 +310,7 @@ export class TelegramService {
         reply_markup: {
           inline_keyboard: [[ {
             text: 'Forward a tip request',
-            switch_inline_query: `/request @${sender.telegramUsername} 1`
+            switch_inline_query: '/request 1'
           } ]]
         }
       }
