@@ -4,7 +4,7 @@
 
 import axios, { AxiosInstance } from 'axios';
 import { User as TelegramUser, InlineQuery, Message, WebhookInfo, CallbackQuery, InlineQueryResult,
-  InlineQueryResultArticle, InputTextMessageContent, ReplyKeyboardMarkup } from 'telegram-typings';
+  InlineQueryResultArticle, InputTextMessageContent, ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup } from 'telegram-typings';
 
 import { TelegramConfig } from "../types";
 
@@ -172,6 +172,18 @@ export class Telegram {
 
   sendDM = async (recipient_id, text): Promise<any> => {
     // TODO
+  }
+
+  botPMInlineKeyboardButton = ():InlineKeyboardButton => {
+    return {
+      text: 'DM',
+      url: `https://t.me/${this.botUser.username}?start`,
+    }
+  }
+
+  // returns an inline keyboard with 1 button - for PM to the bot
+  botPMInlineKeyboardMarkup = ():InlineKeyboardMarkup => {
+    return { inline_keyboard: [[ this.botPMInlineKeyboardButton() ]]};
   }
 
   ////////////////////////////////////////

@@ -51,9 +51,6 @@ export class TelegramService {
     const messageInfo = query.query.match(telegramTipRegex());
     this.log.debug(`query match: ${messageInfo}`);
 
-    //this.log.debug(`${sender.}`);
-
-    let answer = '';
     let results = [];
     if (messageInfo) {
       if (messageInfo.length > 3 && messageInfo[3]) {
@@ -67,6 +64,7 @@ export class TelegramService {
             id: '1',
             title: title,
             input_message_content: {message_text: text},
+            reply_markup: this.telegramBot.botPMInlineKeyboardMarkup(),
           };
       
           // Assemble the inline keyboard
@@ -112,7 +110,7 @@ export class TelegramService {
         if (sender.telegramId) {
           const msg = await this.telegramBot.sendMessage(
             sender.telegramId,
-            `You sent GZE${amount} to ${recipient.telegramUsername}. Use /balance to see your new balance and cashout link.`,
+            `You sent GZE${amount} to @${recipient.telegramUsername}. Use /balance to see your new balance and cashout link.`,
           );
           this.log.debug(msg);
         }
@@ -120,9 +118,19 @@ export class TelegramService {
         if (recipient.telegramId) {
           const msg = await this.telegramBot.sendMessage(
             recipient.telegramId,
-            `${sender.telegramUsername} sent GZE${amount} to you. You can now see your new balance and cashout link, and send tips to other users.`,
+            `@${sender.telegramUsername} sent GZE${amount} to you. You can now see your new balance and cashout link, and send tips to other users.`,
           );
           this.log.debug(msg);
+        } else {
+          // ... and if we don't know them, post in the chat.
+          // TODO - add a keyboard button for DM link
+          const msg = await this.telegramBot.sendMessage(
+            message.chat.id,
+            `@${recipient.telegramUsername}: @${sender.telegramUsername} sent GZE${amount} to you. You can now send tips. DM me to see your balance and cashout link.`,
+            undefined, 
+            { }
+          );
+
         }
       } else {
         // fail
@@ -137,9 +145,71 @@ export class TelegramService {
 
   public respondToInlineResult = async(result: ChosenInlineResult): Promise<any> => {
     this.log.debug(`Handling query result: ${JSON.stringify(result)}`);
-    await this.userRepo.getTelegramUser(result.from.id, result.from.username);
+    // This needs to handle send requests when in a group chat but not a channel.
+    const sender = await this.userRepo.getTelegramUser(result.from.id, result.from.username);
     const messageInfo = result.query.match(telegramTipRegex());
-    await this.userRepo.getTelegramUser(undefined, messageInfo[1].toLowerCase());
+    const recipient = await this.userRepo.getTelegramUser(undefined, messageInfo[1].toLowerCase());
+
+    // Parse the text
+    if (messageInfo && messageInfo.length > 2) {
+      const amount = messageInfo[2];
+
+      // Do the send
+      const response = await this.message.handlePublicMessage(
+        sender,
+        recipient,
+        amount,
+        result.query
+      );
+      this.log.debug(`${response}`);
+
+      // Update the message to show status
+      if (response.startsWith('Success')) {
+        // In this case we don't have the message or chat ID. Can't reply.
+        // TODO - callback query?
+        // const msg = await this.telegramBot.editMessageText(
+        //   message.chat.id,
+        //   message.message_id,
+        //   `@${sender.telegramUsername} sent GZE${amount} to @${recipient.telegramUsername}`,
+        // );
+
+        // Send message to sender
+        if (sender.telegramId) {
+          const msg = await this.telegramBot.sendMessage(
+            sender.telegramId,
+            `You sent GZE${amount} to @${recipient.telegramUsername}. Use /balance to see your new balance and cashout link.`,
+          );
+          this.log.debug(msg);
+        }
+        // Send message to recipient if we know them
+        if (recipient.telegramId) {
+          const msg = await this.telegramBot.sendMessage(
+            recipient.telegramId,
+            `@${sender.telegramUsername} sent GZE${amount} to you. You can now see your new balance and cashout link, and send tips to other users.`,
+          );
+          this.log.debug(msg);
+        } else {
+          // ... and if we don't know them, post in the chat.
+          // TODO - add a keyboard button for DM link
+          // const msg = await this.telegramBot.sendMessage(
+          //   message.chat.id,
+          //   `@${recipient.telegramUsername}: @${sender.telegramUsername} sent GZE${amount} to you. You can now send tips. DM me to see your balance and cashout link.`,
+          //   undefined, 
+          //   { }
+          // );
+
+        }
+      } else {
+        // fail
+        // this.telegramBot.editMessageText(
+        //   message.chat.id,
+        //   message.message_id,
+        //   `@${messageInfo[1]} tried to send GZE${amount} to @${messageInfo[4]}. Sorry it didn't work out.`,
+        // )
+      }
+    } 
+
+
   }
 
   public parseDM = async (dm: Message): Promise<any> => {
@@ -185,10 +255,8 @@ export class TelegramService {
         this.handleDM(sender, dm);
         break;
       }
-      case '/withdraw': {}
-      case 'Cashout': {
-        //this.handleWithdraw(sender, recipientTag, amount, dm);
-        break;
+      case '/request': {
+        this.handleRequest(sender, dm);
       }
     }
   }
@@ -196,7 +264,7 @@ export class TelegramService {
   private handleStart = async (message: Message) => {
     await this.telegramBot.sendMessage(
       message.chat.id,
-      `Hi! Click an option or enter a command`,
+      `Hi! Click an option or enter a command. Type / to see the available commands.`,
       {
         // ReplyKeyboardMarkup
         keyboard: [
@@ -207,10 +275,11 @@ export class TelegramService {
   }
 
   private handleHelp = async (message: Message) => {
-    const text = `I can help you do these things: 
+    const text = `In this private chat I can help you do these things: 
 */balance* Request your current balance and withdraw link
 */send _@user_ _amount_* Send some GazeCoin to @user
-*/topup* To add to your funds using a link obtained from [your GazeCoin wallet](${this.config.paymentUrl})\\.\n\n` +
+*/topup* To add to your funds using a link obtained from [your GazeCoin wallet](${this.config.paymentUrl})\\.
+*/request _amount_* to generate a request that can be sent to a chat\\.\n\n` +
     `In public chats I can be summoned by starting a message with my name, @${this.telegramBot.botUser.username}\\. ` +
     `In this context I can only do _send_ requests\\. Type the recipient\\'s name and the amount of GazeCoin to send\\.\n` +
     `Example\\: \`@${this.telegramBot.botUser.username} @jenny 5 \`\n` +
@@ -223,6 +292,21 @@ export class TelegramService {
       {
         parse_mode: 'MarkdownV2',
         disable_web_page_preview: true,
+      }
+    );
+  }
+
+  private handleRequest = async (sender: User, message: Message) => {
+    // TODO - send a message to a chosen chat. How to see the choice???
+    // The message will be something like: 'Send me a tip', and will have a button that will link to @GazeTipsBot @user amount.
+    await this.telegramBot.sendMessage(message.chat.id, 'Please send me a tip', undefined, 
+      {
+        reply_markup: {
+          inline_keyboard: [[ {
+            text: 'Tip me',
+            switch_inline_query: `@${sender.telegramUsername} 1`
+          } ]]
+        }
       }
     );
   }
