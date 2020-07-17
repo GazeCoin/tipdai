@@ -66,17 +66,17 @@ export class TelegramService {
       }
     } else {
       // Handle /request instructions
-      messageInfo = query.query.match('/\/request\s+([0-9]+)/i');
+      messageInfo = query.query.match(/\/request\s+([0-9]+)/i);
       this.log.debug(`/request match? ${messageInfo}`);
       if (messageInfo) {
         this.log.debug(`Creating request`);
         const amount = messageInfo[1];
         const title = `Create tip request for GZE${amount}. OK?`;
-        const text = `Please send @${sender.telegramUsername} a tip`;
+        const text = `Please send @${sender.telegramUsername} a tip. Press the button below.`;
         const result = this.createInlineKBArticle(title, text, {inline_keyboard: [[
           {
             text: 'Send a tip',
-            switch_inline_query_current_chat: `@${this.telegramBot.botUser.username} @${sender.telegramUsername} ${amount}`,
+            switch_inline_query_current_chat: `@${sender.telegramUsername} ${amount}`,
           }
         ]]});
         results = [ result ];
@@ -287,10 +287,11 @@ export class TelegramService {
 */topup* To add to your funds using a link obtained from [your GazeCoin wallet](${this.config.paymentUrl})\\.
 */request _amount_* to generate a request that can be sent to a chat\\.\n\n` +
     `In public chats I can be summoned by starting a message with my name, @${this.telegramBot.botUser.username}\\. ` +
-    `In this context I can only do _send_ requests\\. Type the recipient\\'s name and the amount of GazeCoin to send\\.\n` +
+    `In this context I can do _send_ requests\\. Type the recipient\\'s name and the amount of GazeCoin to send\\.\n` +
     `Example\\: \`@${this.telegramBot.botUser.username} @jenny 5 \`\n` +
     `When it looks OK to me I\\'ll show a button you can press to confirm the transaction\\. The members of the chat ` +
-    `will see that you\\'ve sent a tip\\.`;
+    `will see that you\\'ve sent a tip\\.\n\n` +
+    `I can also add a message to make it easy for chat members to tip you. `;
     await this.telegramBot.sendMessage(
       message.chat.id,
       text,
