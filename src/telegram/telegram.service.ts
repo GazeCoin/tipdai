@@ -58,7 +58,7 @@ export class TelegramService {
           const recipientTag = messageInfo[1];
           const amount = messageInfo[3];
           const title = `Send GZE${amount} to @${recipientTag}. OK?`;
-          const text = `@${sender.telegramUsername} sent GZE${amount} to @${recipientTag}`;
+          const text = `@${sender.telegramUsername} sent GZE${amount} to @${recipientTag}. @${this.telegramBot.botUser.username}`;
           const result = this.createInlineKBArticle(title, text, 
              this.telegramBot.botPMInlineKeyboardMarkup());
           results = [ result ];
